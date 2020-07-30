@@ -1,0 +1,1 @@
+# Creating Offers and Plans to sell data in the Azure marketplace

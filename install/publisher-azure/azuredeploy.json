@@ -1,0 +1,187 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "DataShareName": {
+            "type": "String",
+            "metadata": {
+                "description": "Name of the Data Share Account that will host your data shares"
+            }
+        },
+        "DataShareAccountLocation": {
+            "type": "string",
+            "defaultValue": "East US",
+            "allowedValues": [
+                "East US",
+                "East US 2",
+                "West Europe",
+                "West US 2",
+                "Australia East",
+                "North Europe",
+                "Southeast Asia",
+                "South Central US",
+                "UK South"
+            ]
+        }
+    },
+    "variables": {
+        "DataShareAccountName": "[substring(concat(parameters('DataShareName'), 'acct', uniqueString(resourceGroup().id)), 0, 23)]",
+        "Location": "[parameters('DataShareAccountLocation')]",
+        "DataShareStorageAccount": "[substring(concat(parameters('DataShareName'), 'acctstorage', uniqueString(resourceGroup().id)), 0, 23)]",
+        "StorageBlobDataReader": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1')]",
+        "AppServicePlanName": "[substring(concat(parameters('DataShareName'), 'function', uniqueString(resourceGroup().id)), 0, 23)]",
+        "PackageURI": "https://raw.githubusercontent.com/ashisa/publisher-arm-template/master/functionapp/functionapp.zip",
+        "FunctionStorageName": "[substring(concat(parameters('DataShareName'), 'function', uniqueString(resourceGroup().id)), 0, 23)]",
+        "FunctionAppName": "[substring(concat(parameters('DataShareName'), 'function', uniqueString(resourceGroup().id)), 0, 23)]",
+        "ResourceGroupRoleAssignmentId": "[guid(concat(resourceGroup().id, 'reader'))]",
+        "ReaderRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('DataShareStorageAccount')]",
+            "apiVersion": "2019-06-01",
+            "location": "[variables('location')]",
+            "kind": "Storage",
+            "sku": {
+                "name": "Standard_LRS"
+            }
+        },
+
+        {
+            "type": "Microsoft.DataShare/accounts",
+            "apiVersion": "2019-11-01",
+            "name": "[variables('DataShareAccountName')]",
+            "location": "[variables('Location')]",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/providers/roleAssignments",
+            "apiVersion": "2018-09-01-preview",
+            "name": "[concat(variables('DataShareStorageAccount'), '/Microsoft.Authorization/', guid(uniqueString(variables('DataShareStorageAccount'))))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('DataShareStorageAccount'))]",
+                "[resourceId('Microsoft.DataShare/accounts', variables('DataShareAccountName'))]"
+            ],
+            "properties": {
+                "roleDefinitionId": "[variables('StorageBlobDataReader')]",
+                "principalId": "[reference(concat('Microsoft.DataShare/accounts/', variables('DataShareAccountName')), '2019-11-01', 'Full').identity.principalId]"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('FunctionStorageName')]",
+            "apiVersion": "2019-06-01",
+            "location": "[variables('location')]",
+            "kind": "Storage",
+            "sku": {
+                "name": "Standard_LRS"
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2019-08-01",
+            "name": "[variables('AppServicePlanName')]",
+            "location": "[variables('Location')]",
+            "sku": {
+                "name": "B1"
+            },
+            "properties": {
+                "name": "[variables('AppServicePlanName')]"
+            }
+        },
+        {
+            "apiVersion": "2019-08-01",
+            "type": "Microsoft.Web/sites",
+            "name": "[variables('FunctionAppName')]",
+            "location": "[variables('Location')]",
+            "kind": "functionapp",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('AppServicePlanName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('FunctionStorageName'))]"
+            ],
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('AppServicePlanName'))]",
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('FunctionStorageName'), ';EndpointSuffix=', environment().suffixes.storage, ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('FunctionStorageName')), '2019-06-01').keys[0].value)]"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                            "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('FunctionStorageName'), ';EndpointSuffix=', environment().suffixes.storage, ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('FunctionStorageName')), '2019-06-01').keys[0].value)]"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTSHARE",
+                            "value": "[toLower(variables('FunctionAppName'))]"
+                        },
+                        {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~2"
+                        },
+                        {
+                            "name": "WEBSITE_NODE_DEFAULT_VERSION",
+                            "value": "~10"
+                        },
+                        {
+                            "name": "FUNCTIONS_WORKER_RUNTIME",
+                            "value": "powershell"
+                        }
+                    ]
+                }
+            },
+            "resources": [
+                {
+                    "apiVersion": "2015-08-01",
+                    "name": "MSDeploy",
+                    "type": "extensions",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Web/Sites', variables('FunctionAppName'))]"
+                    ],
+                    "properties": {
+                        "packageUri": "[variables('packageURI')]"
+                    }
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2018-09-01-preview",
+            "name": "[variables('ResourceGroupRoleAssignmentId')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/Sites', variables('FunctionAppName'))]"
+            ],
+            "properties": {
+                "roleDefinitionId": "[variables('ReaderRoleDefinitionId')]",
+                "principalId": "[reference(concat('Microsoft.Web/sites/', variables('FunctionAppName')), '2019-08-01', 'Full').identity.principalId]",
+                "scope": "[resourceGroup().id]",
+                "principalType": "ServicePrincipal"
+            }
+        }
+    ],
+    "outputs": {
+        "DataShareAccountName": {
+            "type": "string",
+            "value": "[variables('DataShareAccountName')]"
+        },
+        "DataShareStorageName": {
+            "type": "string",
+            "value": "[variables('DataShareStorageAccount')]"
+        },
+        "NotificationEndpointURL": {
+            "type": "string",
+            "value": "[concat('https:/', reference(concat('Microsoft.Web/sites/', variables('FunctionAppName')), '2019-08-01', 'Full').properties.defaultHostName, '/api')]"
+        },
+        "FunctionAppIdentity": {
+            "type": "string",
+            "value": "[reference(concat('Microsoft.Web/sites/', variables('FunctionAppName')), '2019-08-01', 'Full').identity.principalId]"
+        }
+    }
+}
