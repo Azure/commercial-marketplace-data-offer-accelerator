@@ -1,4 +1,4 @@
-# Data Marketplace
-This is a repository for a solution that underpins the sharing of data in the Azure Marketplace. The code in this repository is meant as a proof of concept to allow selling of data within the Azure Marketplace.
+# Azure Data Marketplace
 
+This solution underpins the sharing of data in the Azure Marketplace. The code in this repository is a proof of concept to allow selling of data within the Azure Marketplace and is not considered production ready yet.
 
