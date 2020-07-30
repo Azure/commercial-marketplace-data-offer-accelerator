@@ -351,3 +351,4 @@ MigrationBackup/
 
 # Mac OS File System
 .DS_Store
+powershell-data-function-test/InvokeFunctionDavid.ps1

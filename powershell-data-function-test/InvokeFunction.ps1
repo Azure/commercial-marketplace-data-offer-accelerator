@@ -1,9 +1,9 @@
 
-$cApplicationName = "ecmapp"
-$cResourceGroup = "ec-health-demographic-data-ma"
-$cSubscription = "ab667571-f9a4-444a-9b43-6e32602a40ba"
-$planName = "standard-plan"
-$functionUri = "https://ec-data-share-func-east.azurewebsites.net/api/resource"
+$cApplicationName = ""
+$cResourceGroup = ""
+$cSubscription = ""
+$planName = ""
+$functionUri = ""
 
 $applicationId = "/subscriptions/$cSubscription/resourceGroups/$cResourceGroup/providers/Microsoft.Solutions/applications/$cApplicationName"
 
