@@ -30,7 +30,7 @@
         "DataShareStorageAccount": "[substring(concat(parameters('DataShareName'), 'acctstorage', uniqueString(resourceGroup().id)), 0, 23)]",
         "StorageBlobDataReader": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1')]",
         "AppServicePlanName": "[substring(concat(parameters('DataShareName'), 'function', uniqueString(resourceGroup().id)), 0, 23)]",
-        "PackageURI": "https://raw.githubusercontent.com/ashisa/publisher-arm-template/master/functionapp/functionapp.zip",
+        "PackageURI": "https://github.com/Azure/commercial-marketplace-data-offers/blob/main/install/publisher-azure/functionapp/functionapp.zip",
         "FunctionStorageName": "[substring(concat(parameters('DataShareName'), 'function', uniqueString(resourceGroup().id)), 0, 23)]",
         "FunctionAppName": "[substring(concat(parameters('DataShareName'), 'function', uniqueString(resourceGroup().id)), 0, 23)]",
         "ResourceGroupRoleAssignmentId": "[guid(concat(resourceGroup().id, 'reader'))]",
