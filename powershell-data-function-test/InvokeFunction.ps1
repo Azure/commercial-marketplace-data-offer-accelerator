@@ -1,9 +1,9 @@
 
-$cApplicationName = ""
-$cResourceGroup = ""
-$cSubscription = ""
-$planName = ""
-$functionUri = ""
+$cApplicationName = "<Client Managed Application Name>"
+$cResourceGroup = "<Client Resource Group Name>"
+$cSubscription = "<Client Subscription ID>"
+$planName = "<ID of the Plan in Partner Center>"
+$functionUri = "<function URL>/api/resource"
 
 $applicationId = "/subscriptions/$cSubscription/resourceGroups/$cResourceGroup/providers/Microsoft.Solutions/applications/$cApplicationName"
 
