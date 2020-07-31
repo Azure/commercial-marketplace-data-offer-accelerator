@@ -8,6 +8,10 @@ param($Request, $TriggerMetadata)
 # Write-Host ==============================================================================================================
 # Write-Host ($Request.Body | ConvertTo-Json)
 # Write-Host ==============================================================================================================
+# Write-Host Showing TriggerMetadata
+# Write-Host ==============================================================================================================
+# Write-Host ($TriggerMetadata.Headers.Authorization | ConvertTo-Json)
+# Write-Host ==============================================================================================================
 
 $ErrorActionPreference = 'Stop'
 $DebugPreference = 'Continue'
@@ -36,11 +40,13 @@ $cResourceGroupName = $a[4]
 
 Write-Host Consumer Subscription ID: $cSubscriptionId
 Write-Host Consumer Resource Group: $cResourceGroupName
+Write-Host env:MSI_ENDPOINT: $env:MSI_ENDPOINT
+Write-Host env:MSI_SECRET: $env:MSI_SECRET
 
 # get the customer identity access token
 $resourceURI = "https://management.azure.com/"
 $tokenAuthURI = $env:MSI_ENDPOINT + "?resource=$resourceURI&api-version=2017-09-01"
-$tokenResponse = Invoke-RestMethod -Method Get -Headers @{"Secret" = "$env:MSI_SECRET" } -Uri $tokenAuthURI
+$tokenResponse = Invoke-RestMethod -Method Get -Headers @{"Secret" = "$env:MSI_SECRET"} -Uri $tokenAuthURI
 $cAccessToken = $tokenResponse.access_token
 
 Connect-AzAccount -AccessToken $cAccessToken -AccountId MSI@50342
@@ -69,9 +75,10 @@ Try {
 }
 
 $mApplicationResource = Get-AzResource -ResourceName $mApplication.Name
-$mResourceGroupNameId = $mApplication.Properties.managedResourceGroupId
-$mResourceGroupName = ($mResourceGroupNameId -split '/')[4]
+$mResourceGroupId = $mApplication.Properties.managedResourceGroupId
+$mResourceGroupName = ($mResourceGroupId -split '/')[4]
 $mIdentity = $mApplicationResource.Identity.PrincipalId
+
 $mDataShareAccount = Get-AzDataShareAccount -ResourceGroupName $mResourceGroupName
 $mStorageAccount = Get-AzStorageAccount -ResourceGroupName $mResourceGroupName
 $mTenantId = $mApplicationResource.Identity.TenantId
@@ -98,17 +105,18 @@ $body = @{
     }
 } | ConvertTo-Json
 
-# should be checking for existing role assignment instead of catching this 409 Code (Conflict)
 Try {
     
     Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
 
 }
 Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
-    
 
     if ($_.Exception.Response.StatusCode -eq 409) {
         Write-Host "WARNING: Role already assigned" -ForegroundColor Yellow
+    }
+    elseif ($_.Exception.Response.StatusCode -eq 403) {
+        Write-Host "ERROR: Canot assign role - 'Forbidden'" -ForegroundColor Yellow
     }
     else {
         throw $_
