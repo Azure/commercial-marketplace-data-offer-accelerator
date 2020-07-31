@@ -8,10 +8,6 @@ param($Request, $TriggerMetadata)
 # Write-Host ==============================================================================================================
 # Write-Host ($Request.Body | ConvertTo-Json)
 # Write-Host ==============================================================================================================
-# Write-Host Showing TriggerMetadata
-# Write-Host ==============================================================================================================
-# Write-Host ($TriggerMetadata.Headers.Authorization | ConvertTo-Json)
-# Write-Host ==============================================================================================================
 
 $ErrorActionPreference = 'Stop'
 $DebugPreference = 'Continue'
@@ -43,11 +39,7 @@ Write-Host Consumer Resource Group: $cResourceGroupName
 Write-Host env:MSI_ENDPOINT: $env:MSI_ENDPOINT
 Write-Host env:MSI_SECRET: $env:MSI_SECRET
 
-# get the customer identity access token
-$resourceURI = "https://management.azure.com/"
-$tokenAuthURI = $env:MSI_ENDPOINT + "?resource=$resourceURI&api-version=2017-09-01"
-$tokenResponse = Invoke-RestMethod -Method Get -Headers @{"Secret" = "$env:MSI_SECRET"} -Uri $tokenAuthURI
-$cAccessToken = $tokenResponse.access_token
+$cAccessToken = Get-ClientAccessToken
 
 Connect-AzAccount -AccessToken $cAccessToken -AccountId MSI@50342
 
@@ -160,12 +152,7 @@ if (!$pDataShare) {
     exit
 }
 
-# Write-DataShare $pDataShare
-
-# Write-Host =================================================================================
 # Write-Host Send an invite if one hasn't already been sent
-# Write-Host =================================================================================
-
 $invitation = Get-AzDataShareInvitation -AccountName $pDataShareAccountName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name
 if ($invitation) {
     Remove-AzDataShareInvitation -AccountName $pDataShareAccountName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name -Name $invitation.Name
@@ -173,15 +160,10 @@ if ($invitation) {
 $invitationName = "$($pDataShare.Name)-Invitation"
 $invitation = New-AzDataShareInvitation -AccountName $pDataShareAccountName -Name $invitationName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name -TargetObjectId $mIdentity -TargetTenantId $mTenantId
 
-# Write-Invitation $invitation
-
 # suppress version warnings
 Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
 
-# Write-Host =================================================================================
-# Write-Host "Get the Data Sets before changing contexts"
-# Write-Host =================================================================================
-
+# Get the Data Sets before changing contexts
 $shareDataSets = Get-AzDataShareDataSet -AccountName $pDataShareAccountName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name
 
 if ($shareDataSets.Count -eq 0) {
@@ -199,10 +181,7 @@ if ($shareDataSets.Count -eq 0) {
     
 Set-AzContext -SubscriptionId $cSubscriptionId
 
-# Write-Host =======================================================================================
-# Write-Host Connect as the Managed Application
-# Write-Host =======================================================================================
-
+# Connect as the Managed Application
 # fetching token for managed identity
 $listTokenUri = "https://management.azure.com/$cApplicationId/listTokens?api-version=2018-09-01-preview"
 
