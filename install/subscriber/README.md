@@ -2,8 +2,6 @@
 
 The files in this directory must be zipped up into a *.zip package so they may deployed with every Plan within your Offers as defined in Partner Center.
 
-The compressed file with these resources in it is typically called `app.zip`.
-
 The following instructions assume you are not going to clone the repository.
 
 1. Download the contents of this repository as a ZIP file from [this location](https://github.com/Azure/commercial-marketplace-data-offers/archive/main.zip).
