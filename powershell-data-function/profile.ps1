@@ -11,14 +11,17 @@
 
 # Authenticate with Azure PowerShell using MSI.
 # Remove this if you are not planning on using MSI or Azure PowerShell.
-if ($env:MSI_SECRET -and (Get-Module -ListAvailable Az.Accounts)) {
-    Connect-AzAccount -Identity
+# if ($env:MSI_SECRET -and (Get-Module -ListAvailable Az.Accounts)) {
+#     Connect-AzAccount -Identity
+# }
+
+function Get-ClientAccessToken() {
+    $resourceURI = "https://management.azure.com/"
+    $tokenAuthURI = $env:MSI_ENDPOINT + "?resource=$resourceURI&api-version=2017-09-01"
+    $tokenResponse = Invoke-RestMethod -Method Get -Headers @{"Secret" = "$env:MSI_SECRET"} -Uri $tokenAuthURI
+    return $tokenResponse.access_token
 }
 
-# Uncomment the next line to enable legacy AzureRm alias in Azure PowerShell.
-# Enable-AzureRmAlias
-
-# You can also define functions or aliases that can be referenced in any of your PowerShell functions.
 function Stop-WithHttpOK ($message) {
     
     if (!$message) {

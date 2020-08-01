@@ -36,12 +36,10 @@ $cResourceGroupName = $a[4]
 
 Write-Host Consumer Subscription ID: $cSubscriptionId
 Write-Host Consumer Resource Group: $cResourceGroupName
+Write-Host env:MSI_ENDPOINT: $env:MSI_ENDPOINT
+Write-Host env:MSI_SECRET: $env:MSI_SECRET
 
-# get the customer identity access token
-$resourceURI = "https://management.azure.com/"
-$tokenAuthURI = $env:MSI_ENDPOINT + "?resource=$resourceURI&api-version=2017-09-01"
-$tokenResponse = Invoke-RestMethod -Method Get -Headers @{"Secret" = "$env:MSI_SECRET" } -Uri $tokenAuthURI
-$cAccessToken = $tokenResponse.access_token
+$cAccessToken = Get-ClientAccessToken
 
 Connect-AzAccount -AccessToken $cAccessToken -AccountId MSI@50342
 
@@ -69,9 +67,10 @@ Try {
 }
 
 $mApplicationResource = Get-AzResource -ResourceName $mApplication.Name
-$mResourceGroupNameId = $mApplication.Properties.managedResourceGroupId
-$mResourceGroupName = ($mResourceGroupNameId -split '/')[4]
+$mResourceGroupId = $mApplication.Properties.managedResourceGroupId
+$mResourceGroupName = ($mResourceGroupId -split '/')[4]
 $mIdentity = $mApplicationResource.Identity.PrincipalId
+
 $mDataShareAccount = Get-AzDataShareAccount -ResourceGroupName $mResourceGroupName
 $mStorageAccount = Get-AzStorageAccount -ResourceGroupName $mResourceGroupName
 $mTenantId = $mApplicationResource.Identity.TenantId
@@ -98,17 +97,18 @@ $body = @{
     }
 } | ConvertTo-Json
 
-# should be checking for existing role assignment instead of catching this 409 Code (Conflict)
 Try {
     
     Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
 
 }
 Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
-    
 
     if ($_.Exception.Response.StatusCode -eq 409) {
         Write-Host "WARNING: Role already assigned" -ForegroundColor Yellow
+    }
+    elseif ($_.Exception.Response.StatusCode -eq 403) {
+        Write-Host "ERROR: Canot assign role - 'Forbidden'" -ForegroundColor Yellow
     }
     else {
         throw $_
@@ -152,12 +152,7 @@ if (!$pDataShare) {
     exit
 }
 
-# Write-DataShare $pDataShare
-
-# Write-Host =================================================================================
 # Write-Host Send an invite if one hasn't already been sent
-# Write-Host =================================================================================
-
 $invitation = Get-AzDataShareInvitation -AccountName $pDataShareAccountName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name
 if ($invitation) {
     Remove-AzDataShareInvitation -AccountName $pDataShareAccountName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name -Name $invitation.Name
@@ -165,15 +160,10 @@ if ($invitation) {
 $invitationName = "$($pDataShare.Name)-Invitation"
 $invitation = New-AzDataShareInvitation -AccountName $pDataShareAccountName -Name $invitationName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name -TargetObjectId $mIdentity -TargetTenantId $mTenantId
 
-# Write-Invitation $invitation
-
 # suppress version warnings
 Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
 
-# Write-Host =================================================================================
-# Write-Host "Get the Data Sets before changing contexts"
-# Write-Host =================================================================================
-
+# Get the Data Sets before changing contexts
 $shareDataSets = Get-AzDataShareDataSet -AccountName $pDataShareAccountName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name
 
 if ($shareDataSets.Count -eq 0) {
@@ -191,10 +181,7 @@ if ($shareDataSets.Count -eq 0) {
     
 Set-AzContext -SubscriptionId $cSubscriptionId
 
-# Write-Host =======================================================================================
-# Write-Host Connect as the Managed Application
-# Write-Host =======================================================================================
-
+# Connect as the Managed Application
 # fetching token for managed identity
 $listTokenUri = "https://management.azure.com/$cApplicationId/listTokens?api-version=2018-09-01-preview"
 
