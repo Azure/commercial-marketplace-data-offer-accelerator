@@ -50,20 +50,6 @@
             },
             "properties": {
             }
-        },
-        {
-            "type": "Microsoft.Storage/storageAccounts/providers/roleAssignments",
-            "apiVersion": "2018-09-01-preview",
-            "name": "[concat(variables('storageAccountName'), '/Microsoft.Authorization/', guid(uniqueString(variables('storageAccountName'))))]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-                "[resourceId('Microsoft.DataShare/accounts', variables('dataShareAccountName'))]"
-            ],
-            "properties": {
-                "roleDefinitionId": "[variables('Owner')]",
-                "principalId": "[reference(concat('Microsoft.DataShare/accounts/', variables('dataShareAccountName')), '2019-11-01', 'Full').identity.principalId]",
-                "principalType": "ServicePrincipal"
-            }
         }
     ],
     "outputs": {
