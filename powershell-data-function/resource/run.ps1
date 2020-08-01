@@ -75,19 +75,6 @@ $mDataShareAccount = Get-AzDataShareAccount -ResourceGroupName $mResourceGroupNa
 $mStorageAccount = Get-AzStorageAccount -ResourceGroupName $mResourceGroupName
 $mTenantId = $mApplicationResource.Identity.TenantId
 
-Write-Host ==============================================================================================================
-Write-Host Managed Application Values
-Write-Host mApplicationResource ($mApplicationResource | ConvertTo-Json)
-Write-Host "mIdentity: $mIdentity"
-Write-Host "mResourceGroupId: $mResourceGroupId"
-Write-Host "mResourceGroupName: $mResourceGroupName"
-Write-Host "mResourceGroupId: $mResourceGroupId"
-Write-Host "mDataShareAccount: $mDataShareAccount.Name"
-Write-Host "mDataShareAccount.Identity: $mDataShareAccount.Identity"
-Write-Host "mStorageAccount: $mStorageAccount"
-Write-Host "mTenantId: $mTenantId"
-Write-Host ==============================================================================================================
-
 # Write-Host ==============================================================================================================
 # Write-Host "on Data Storage account $($mStorageAccount.StorageAccountName)"
 # Write-Host "Creating role assignment on Data Storage account: Storage Blob Data Contributor"

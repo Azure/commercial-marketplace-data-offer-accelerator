@@ -23,8 +23,8 @@
         }
     },
     "variables": {
-        "storageAccountName": "[substring(concat(parameters('storageAccountNamePrefix'), uniqueString(resourceGroup().name)), 0, 15)]",
-        "dataShareAccountName": "[substring(concat('datashare', uniqueString(resourceGroup().name)), 0, 15)]",
+        "storageAccountName": "[substring(concat(parameters('storageAccountNamePrefix'), uniqueString('storage')), 0, 15)]",
+        "dataShareAccountName": "[substring(concat('datashare', uniqueString('storage')), 0, 15)]",
         "Owner": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]"
     },
     "resources": [
@@ -37,7 +37,8 @@
                 "name": "[parameters('storageAccountType')]"
             },
             "kind": "Storage",
-            "properties": {}
+            "properties": {
+            }
         },
         {
             "type": "Microsoft.DataShare/accounts",
@@ -47,20 +48,7 @@
             "identity": {
                 "type": "SystemAssigned"
             },
-            "properties": {}
-        },
-        {
-            "type": "Microsoft.Storage/storageAccounts/providers/roleAssignments",
-            "apiVersion": "2018-09-01-preview",
-            "name": "[concat(variables('storageAccountName'), '/Microsoft.Authorization/', guid(uniqueString(variables('storageAccountName'))))]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
-                "[resourceId('Microsoft.DataShare/accounts', variables('dataShareAccountName'))]"
-            ],
             "properties": {
-                "roleDefinitionId": "[variables('Owner')]",
-                "principalId": "[reference(concat('Microsoft.DataShare/accounts/', variables('dataShareAccountName')), '2019-11-01', 'Full').identity.principalId]",
-                "principalType": "ServicePrincipal"
             }
         }
     ],
