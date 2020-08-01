@@ -22,7 +22,7 @@
             "name": "pid-cf7a8ffe-49fe-5d88-b40c-31a95890ed3d",
             "type": "Microsoft.Resources/deployments",
             "properties": {
-                "mode": "Incremental",
+                "mode": "Complete",
                 "template": {
                     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
                     "contentVersion": "1.0.0.0",
@@ -35,7 +35,7 @@
             "apiVersion": "2019-10-01",
             "name": "nestedDeployment",
             "properties": {
-                "mode": "Incremental",
+                "mode": "Complete",
                 "templateLink": {
                     "contentVersion": "1.0.0.0",
                     "uri": "[variables('nestedTemplateUri')]"
