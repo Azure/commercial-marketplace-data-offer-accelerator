@@ -7,13 +7,6 @@
                 "header": "Welcome to your\nAzure Data Share Application",
                 "description": "Your data may be found in the Azure Storage database accessed by clicking the link next to **Managed resource group** above."
             }
-        },
-        {
-            "kind": "Overview",
-            "properties": {
-                "header": "Warning",
-                "description": "Deleting this application or the Resource Group it resides in will delete the associate Managed Resource Group and the Data Share Account withing it."
-            }
         }
     ]
 }    
