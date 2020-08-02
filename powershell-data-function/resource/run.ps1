@@ -3,17 +3,15 @@ using namespace System.Net
 # Input bindings are passed in via param block.
 param($Request, $TriggerMetadata)
 
-Write-Host ==============================================================================================================
-Write-Host Showing Request
-Write-Host ==============================================================================================================
-Write-Host ($Request | ConvertTo-Json)
-Write-Host ==============================================================================================================
-
-$ErrorActionPreference = 'Stop'
 $DebugPreference = 'Continue'
+$ErrorActionPreference = 'Stop'
+$verboseOutput = $false
+
+# Write-Request $Request 
 
 $provisioningState = $Request.Body.provisioningState
 
+# ensure this a Reqeust we want to handle
 if ($provisioningState -ne "Succeeded") {
     
     $returnMessage = "Exiting without any processing of Azure resources. Request has '$provisioningState' instead of 'Succeeded' provisioning state."
@@ -23,6 +21,10 @@ if ($provisioningState -ne "Succeeded") {
     
     Stop-WithHttpOK $returnMessage
 }
+
+$cAccessToken = Get-ClientAccessToken
+
+Connect-AzAccount -AccessToken $cAccessToken -AccountId MSI@50342
 
 #==================================================================================
 # Fetching Consumer side details
@@ -39,9 +41,6 @@ $cResourceGroupName = $a[4]
 # Write-Host env:MSI_ENDPOINT: $env:MSI_ENDPOINT
 # Write-Host env:MSI_SECRET: $env:MSI_SECRET
 
-$cAccessToken = Get-ClientAccessToken
-
-Connect-AzAccount -AccessToken $cAccessToken -AccountId MSI@50342
 
 # get the managed application information
 
@@ -51,7 +50,8 @@ Try {
     # Sometimes this call fails because the managed application has not completed provisioninng 
     # by the time this function gets called
     $mApplication = Get-AzManagedApplication -ResourceGroupName $cResourceGroupName
-} Catch [Microsoft.PowerShell.Commands.HttpResponseException]{
+}
+Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
     
     $message = "WARNING: Get-AzManagedApplication -ResourceGroupName $cResourceGroupName FAILED"
 
@@ -70,18 +70,11 @@ $mApplicationResource = Get-AzResource -ResourceName $mApplication.Name
 $mResourceGroupId = $mApplication.Properties.managedResourceGroupId
 $mResourceGroupName = ($mResourceGroupId -split '/')[4]
 $mIdentity = $mApplicationResource.Identity.PrincipalId
-
 $mDataShareAccount = Get-AzDataShareAccount -ResourceGroupName $mResourceGroupName
 $mStorageAccount = Get-AzStorageAccount -ResourceGroupName $mResourceGroupName
 $mTenantId = $mApplicationResource.Identity.TenantId
 
-# Write-Host ==============================================================================================================
-# Write-Host mApplication ($mApplication | ConvertTo-Json)
-# Write-Host mApplicationResource ($mApplicationResource | ConvertTo-Json)
-# Write-Host mDataShareAccount $mDataShareAccount
-# Write-Host mIdentity $mIdentity
-# Write-Host mStorageAccount $mStorageAccount
-# Write-Host ==============================================================================================================
+if ($verboseOutput) { Write-ManagedAppVaraiables }
 
 # Write-Host ==============================================================================================================
 # Write-Host "on Data Storage account $($mStorageAccount.StorageAccountName)"
@@ -130,6 +123,7 @@ $pResourceGroupName = (Get-Item -Path Env:WEBSITE_RESOURCE_GROUP).Value
 $websiteOwnerName = (Get-Item -Path Env:WEBSITE_OWNER_NAME).Value
 $pSubscriptionId = ($websiteOwnerName -split "\+")[0]
 
+
 Write-Host "Publisher Resource Group Name: $pResourceGroupName"
 Write-Host "Publisher Subscription ID: $pSubscriptionId"
 
@@ -168,6 +162,10 @@ if ($invitation) {
 $invitationName = "$($pDataShare.Name)-Invitation"
 $invitation = New-AzDataShareInvitation -AccountName $pDataShareAccountName -Name $invitationName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name -TargetObjectId $mIdentity -TargetTenantId $mTenantId
 
+if($verboseOutput){
+    Write-Invitation $invitation
+}
+
 # suppress version warnings
 Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
 
@@ -186,6 +184,35 @@ if ($shareDataSets.Count -eq 0) {
 
     exit
 }
+
+# Write-Host =======================================================================================
+# Write-Host "Get the publisher side sync trigger"
+# Write-Host =======================================================================================
+
+# $pTrigger = $null
+
+# Try {
+#     $pTrigger = Get-AzDataShareTrigger -ResourceGroupName $pResourceGroupName -AccountName $pDataShareAccountName -ShareSubscriptionName $pSubscriptionId
+# }
+# catch {
+    
+#     $body = "Failed to fetch Trigger from publisher"
+    
+#     Write-Host $body
+#     Write-Host $_.Exception.Message
+    
+#     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+#             StatusCode = 404
+#             Body       = $body
+#         })
+
+#     exit
+# }
+
+# Write-Host pTrigger.Id $pTrigger.Id
+# Write-Host pTrigger ($pTrigger | ConvertTo-Json)
+# Write-Host =======================================================================================
+
     
 Set-AzContext -SubscriptionId $cSubscriptionId
 
@@ -277,40 +304,24 @@ foreach ($dataSet in $shareDataSets) {
     Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
 }
 
-# Write-Host =======================================================================================
-# Write-Host "Start synchronization"
-# Write-Host =======================================================================================
+if ($verboseOutput) {
+    Write-Host =======================================================================================
+    Write-Host "Start synchronization"
+    Write-Host =======================================================================================
+}
 
 $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/Synchronize?api-version=2019-11-01"
 $body = @{"synchronizationMode" = "Incremental" } | ConvertTo-Json
 
-# Invoke-RestMethod -Method POST -Uri $restUri -Headers $headers -Body $body
+Invoke-RestMethod -Method POST -Uri $restUri -Headers $headers -Body $body
+
+if ($verboseOutput) {
+    Write-Host =======================================================================================
+    Write-Host "Creating client side Trigger"
+    Write-Host =======================================================================================
+}
 
 Stop-WithHttpOK
-
-# Write-Host =======================================================================================
-# Write-Host "Create the client side sync trigger"
-# Write-Host =======================================================================================
-
-# $pTrigger = $null
-
-# Try {
-
-#     $pTrigger = Get-AzDataShareTrigger -ResourceGroupName $pResourceGroupName -AccountName $pDataShareAccountName -ShareSubscriptionName $pSubscriptionId
-# } catch {
-    
-#     $body = "Failed to fetch Trigger from publisher"
-    
-#     Write-Host $body
-#     Write-Host $_.Exception.Message
-    
-#     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-#         StatusCode = 404
-#         Body       = $body
-#     })
-
-#     exit
-# }
 
 # New-AzDataShareTrigger  -ResourceGroupName $mResourceGroupName `
 #                         -AccountName $mDataShareAccount.Name `
@@ -318,6 +329,7 @@ Stop-WithHttpOK
 #                         -Name $pTrigger.Name `
 #                         -RecurrenceInterval $pTrigger.RecurrenceInterval `
 #                         -SynchronizationTime $pTrigger.SynchronizationTime
+
 
 
 # 1. Create share subscription    
