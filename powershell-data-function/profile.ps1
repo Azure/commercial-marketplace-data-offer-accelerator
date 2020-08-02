@@ -15,10 +15,40 @@
 #     Connect-AzAccount -Identity
 # }
 
+function Assert-ResourceGroupExists($resourceGroupName) {
+
+    $rg = $null
+
+    try {
+        $rg = Get-AzResourceGroup -Name $resourceGroupName
+    }
+    catch {
+        
+        if (!$rg) {
+            # would like to throw 404 here, but am throwing 202 'Accepted' to stop retries
+            $message = "Resource Group $resourceGroupName not found. Returning 202 to stop retries"
+        }
+        
+        $body = @{
+            "message" = $message
+        } | ConvertTo-Json
+        
+        Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+                StatusCode = [HttpStatusCode]::Accepted
+                Body       = $body
+            }
+        )
+        
+        exit
+    }
+    
+    
+}
+
 function Get-ClientAccessToken() {
     $resourceURI = "https://management.azure.com/"
     $tokenAuthURI = $env:MSI_ENDPOINT + "?resource=$resourceURI&api-version=2017-09-01"
-    $tokenResponse = Invoke-RestMethod -Method Get -Headers @{"Secret" = "$env:MSI_SECRET"} -Uri $tokenAuthURI
+    $tokenResponse = Invoke-RestMethod -Method Get -Headers @{"Secret" = "$env:MSI_SECRET" } -Uri $tokenAuthURI
     return $tokenResponse.access_token
 }
 
@@ -41,6 +71,29 @@ function Stop-WithHttpOK ($message) {
     exit
 }
 
+function Write-Request ($request) {
+    Write-Host ==============================================================================================================
+    Write-Host Showing Request
+    Write-Host ($request | ConvertTo-Json)
+    Write-Host ==============================================================================================================
+}
+
+function Write-ManagedAppVariables() {
+
+    Write-Host ==============================================================================================================
+    Write-Host mIdentity $global:mIdentity
+    Write-Host --------------------------------------------------------------------------------------------------------------
+    Write-Host JSON
+    Write-Host --------------------------------------------------------------------------------------------------------------
+    # Write-Host mApplication ($mApplication | ConvertTo-Json)
+    Write-Host --------------------------------------------------------------------------------------------------------------
+    Write-Host mApplicationResource ($global:mApplicationResource | ConvertTo-Json)
+    Write-Host ==============================================================================================================
+    Write-Host mDataShareAccount ($global:mDataShareAccount | ConvertTo-Json)
+    Write-Host --------------------------------------------------------------------------------------------------------------
+    Write-Host mStorageAccount ($globalmStorageAccount | ConvertTo-Json)
+    Write-Host ==============================================================================================================
+}
 function Write-DataShare ($dataShare) {
 
     Write-Host ------------------------------------------------------
@@ -53,16 +106,6 @@ function Write-DataShare ($dataShare) {
     Write-Host "dataShare.ProvisioningState: $($dataShare.ProvisioningState)"
     Write-Host "dataShare.ShareKind: $($dataShare.ShareKind)"
     Write-Host "dataShare.Type: $($dataShare.Type)"
-    Write-Host ------------------------------------------------------
-
-}
-
-function Write-RequestBody ($requestBody) {
-
-    Write-Host ------------------------------------------------------
-    Write-Host "Request.Body as JSON"
-    Write-Host ------------------------------------------------------
-    Write-Host ($requestBody | ConvertTo-Json)
     Write-Host ------------------------------------------------------
 
 }
