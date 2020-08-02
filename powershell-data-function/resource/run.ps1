@@ -3,11 +3,11 @@ using namespace System.Net
 # Input bindings are passed in via param block.
 param($Request, $TriggerMetadata)
 
-# Write-Host ==============================================================================================================
-# Write-Host Showing Request.Body
-# Write-Host ==============================================================================================================
-# Write-Host ($Request.Body | ConvertTo-Json)
-# Write-Host ==============================================================================================================
+Write-Host ==============================================================================================================
+Write-Host Showing Request
+Write-Host ==============================================================================================================
+Write-Host ($Request | ConvertTo-Json)
+Write-Host ==============================================================================================================
 
 $ErrorActionPreference = 'Stop'
 $DebugPreference = 'Continue'
@@ -34,10 +34,10 @@ $a = $cApplicationId -split '/'
 $cSubscriptionId = $a[2]
 $cResourceGroupName = $a[4]
 
-Write-Host Consumer Subscription ID: $cSubscriptionId
-Write-Host Consumer Resource Group: $cResourceGroupName
-Write-Host env:MSI_ENDPOINT: $env:MSI_ENDPOINT
-Write-Host env:MSI_SECRET: $env:MSI_SECRET
+# Write-Host Consumer Subscription ID: $cSubscriptionId
+# Write-Host Consumer Resource Group: $cResourceGroupName
+# Write-Host env:MSI_ENDPOINT: $env:MSI_ENDPOINT
+# Write-Host env:MSI_SECRET: $env:MSI_SECRET
 
 $cAccessToken = Get-ClientAccessToken
 
@@ -74,6 +74,14 @@ $mIdentity = $mApplicationResource.Identity.PrincipalId
 $mDataShareAccount = Get-AzDataShareAccount -ResourceGroupName $mResourceGroupName
 $mStorageAccount = Get-AzStorageAccount -ResourceGroupName $mResourceGroupName
 $mTenantId = $mApplicationResource.Identity.TenantId
+
+# Write-Host ==============================================================================================================
+# Write-Host mApplication ($mApplication | ConvertTo-Json)
+# Write-Host mApplicationResource ($mApplicationResource | ConvertTo-Json)
+# Write-Host mDataShareAccount $mDataShareAccount
+# Write-Host mIdentity $mIdentity
+# Write-Host mStorageAccount $mStorageAccount
+# Write-Host ==============================================================================================================
 
 # Write-Host ==============================================================================================================
 # Write-Host "on Data Storage account $($mStorageAccount.StorageAccountName)"
@@ -276,7 +284,7 @@ foreach ($dataSet in $shareDataSets) {
 $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/Synchronize?api-version=2019-11-01"
 $body = @{"synchronizationMode" = "Incremental" } | ConvertTo-Json
 
-Invoke-RestMethod -Method POST -Uri $restUri -Headers $headers -Body $body
+# Invoke-RestMethod -Method POST -Uri $restUri -Headers $headers -Body $body
 
 Stop-WithHttpOK
 
@@ -284,13 +292,14 @@ Stop-WithHttpOK
 # Write-Host "Create the client side sync trigger"
 # Write-Host =======================================================================================
 
+# $pTrigger = $null
+
 # Try {
 
-#     Get-AzDataShareTrigger -ResourceGroupName $pResourceGroupName -AccountName $pDataShareAccountName -ShareSubscriptionName $pSubscriptionId
-
+#     $pTrigger = Get-AzDataShareTrigger -ResourceGroupName $pResourceGroupName -AccountName $pDataShareAccountName -ShareSubscriptionName $pSubscriptionId
 # } catch {
     
-#     $body = "Failed to fetch Trigger from publisher or create new trigger on client"
+#     $body = "Failed to fetch Trigger from publisher"
     
 #     Write-Host $body
 #     Write-Host $_.Exception.Message
@@ -303,7 +312,12 @@ Stop-WithHttpOK
 #     exit
 # }
 
-# New-AzDataShareTrigger -ResourceGroupName $mResourceGroupName -AccountName $mDataShareAccount.Name -ShareSubscriptionName $planName -Name "$($mDataShareAccount.Name)Trigger" -RecurrenceInterval $synchRecurranceInterval -SynchronizationTime $synchTime
+# New-AzDataShareTrigger  -ResourceGroupName $mResourceGroupName `
+#                         -AccountName $mDataShareAccount.Name `
+#                         -ShareSubscriptionName $planName `
+#                         -Name $pTrigger.Name `
+#                         -RecurrenceInterval $pTrigger.RecurrenceInterval `
+#                         -SynchronizationTime $pTrigger.SynchronizationTime
 
 
 # 1. Create share subscription    
