@@ -15,10 +15,40 @@
 #     Connect-AzAccount -Identity
 # }
 
+function Assert-ResourceGroupExists($resourceGroupName) {
+
+    $rg = $null
+
+    try {
+        $rg = Get-AzResourceGroup -Name $resourceGroupName
+    }
+    catch {
+        
+        if (!$rg) {
+            # would like to throw 404 here, but am throwing 202 'Accepted' to stop retries
+            $message = "Resource Group $resourceGroupName not found. Returning 202 to stop retries"
+        }
+        
+        $body = @{
+            "message" = $message
+        } | ConvertTo-Json
+        
+        Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+                StatusCode = [HttpStatusCode]::Accepted
+                Body       = $body
+            }
+        )
+        
+        exit
+    }
+    
+    
+}
+
 function Get-ClientAccessToken() {
     $resourceURI = "https://management.azure.com/"
     $tokenAuthURI = $env:MSI_ENDPOINT + "?resource=$resourceURI&api-version=2017-09-01"
-    $tokenResponse = Invoke-RestMethod -Method Get -Headers @{"Secret" = "$env:MSI_SECRET"} -Uri $tokenAuthURI
+    $tokenResponse = Invoke-RestMethod -Method Get -Headers @{"Secret" = "$env:MSI_SECRET" } -Uri $tokenAuthURI
     return $tokenResponse.access_token
 }
 
@@ -41,46 +71,36 @@ function Stop-WithHttpOK ($message) {
     exit
 }
 
-function Write-DataShare ($dataShare) {
+function Write-ItemAsJson {
+    param(
+        [Parameter(Mandatory=$true)]
+        [String] $HeaderMessage,
 
-    Write-Host ------------------------------------------------------
-    Write-Host "Data Share"
-    Write-Host ------------------------------------------------------
-    Write-Host "dataShare.CreatedBy: $($dataShare.CreatedBy)"
-    Write-Host "dataShare.Description: $($dataShare.Description)"
-    Write-Host "dataShare.Id: $($dataShare.Id)"
-    Write-Host "dataShare.Name: $($dataShare.Name)"
-    Write-Host "dataShare.ProvisioningState: $($dataShare.ProvisioningState)"
-    Write-Host "dataShare.ShareKind: $($dataShare.ShareKind)"
-    Write-Host "dataShare.Type: $($dataShare.Type)"
-    Write-Host ------------------------------------------------------
-
-}
-
-function Write-RequestBody ($requestBody) {
-
-    Write-Host ------------------------------------------------------
-    Write-Host "Request.Body as JSON"
-    Write-Host ------------------------------------------------------
-    Write-Host ($requestBody | ConvertTo-Json)
-    Write-Host ------------------------------------------------------
-
-}
-
-function Write-Invitation ($invitation) {
+        [Parameter(Mandatory=$true)]
+        [System.Object] $Item
+    )
     
-    Write-Host ------------------------------------------------------
-    Write-Host "Invitation"
-    Write-Host ------------------------------------------------------
-    Write-Host "invitation.CreatedBy: $($invitation.CreatedBy)"
-    Write-Host "invitation.Description: $($invitation.Description)"
-    Write-Host "invitation.Id: $($invitation.Id)"
-    Write-Host "invitation.InvitationId: $($invitation.InvitationId)"
-    Write-Host "invitation.InvitationStatus: $($invitation.InvitationStatus)"
-    Write-Host "invitation.Name: $($invitation.Name)"
-    Write-Host "invitation.ProvisioningState: $($invitation.ProvisioningState)"
-    Write-Host "invitation.ShareKind: $($invitation.ShareKind)"
-    Write-Host "invitation.Type: $($invitation.Type)"
-    Write-Host ------------------------------------------------------
+    Write-Host ==============================================================================================================
+    Write-Host $HeaderMessage
+    Write-Host --------------------------------------------------------------------------------------------------------------
+    Write-Host ($Item | ConvertTo-Json)
+    Write-Host ==============================================================================================================
+
+}
+
+function Write-ItemsAsJSON {
+    param(
+        [Parameter(Mandatory=$true)]
+        [String] $HeaderMessage,
+
+        [Parameter(Mandatory=$true)]
+        [System.Collections.Hashtable] $Items
+    )
+    
+    Write-Host ==============================================================================================================
+    Write-Host $HeaderMessage
+    Write-Host --------------------------------------------------------------------------------------------------------------
+    Write-Host ($Items | ConvertTo-Json)
+    Write-Host ==============================================================================================================
 
 }
