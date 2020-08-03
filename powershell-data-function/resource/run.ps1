@@ -22,7 +22,6 @@ if ($provisioningState -ne "Succeeded") {
 }
 
 $cAccessToken = Get-ClientAccessToken
-
 Connect-AzAccount -AccessToken $cAccessToken -AccountId MSI@50342
 
 # Fetching Consumer side details
@@ -125,6 +124,9 @@ $pResourceGroupName = (Get-Item -Path Env:WEBSITE_RESOURCE_GROUP).Value
 $websiteOwnerName = (Get-Item -Path Env:WEBSITE_OWNER_NAME).Value
 $pSubscriptionId = ($websiteOwnerName -split "\+")[0]
 
+
+
+
 # connecting to publisher side
 Set-AzContext -SubscriptionId $pSubscriptionId
 
@@ -179,6 +181,8 @@ if ($shareDataSets.Count -eq 0) {
 
     exit
 }
+
+# TODO: get the pub side trigger here
 
 Set-AzContext -SubscriptionId $cSubscriptionId
 
@@ -269,6 +273,8 @@ $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resource
 $body = @{"synchronizationMode" = "Incremental" } | ConvertTo-Json
 
 Invoke-RestMethod -Method POST -Uri $restUri -Headers $headers -Body $body
+
+# TODO: New up the client side trigger here
 
 Write-Host "Done executing notification deployment notification Azure Function"
 Stop-WithHttpOK
