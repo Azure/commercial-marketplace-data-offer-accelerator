@@ -220,10 +220,9 @@ Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
     
     if ($_.Exception.Response.StatusCode -eq 409) {
         
-        $message = "WARNING: Data Share Subscription '$planName' already assigned"
+        $message = "WARNING: Data Share Subscription '$planName' already assigned. Existing with HTTP 200 to stop retries."
         
-        Write-Host $message -ForegroundColor Yellow
-        Write-Host "Exiting with HTTP Code 200" -ForegroundColor Yellow
+        Write-Host $message
         
         Stop-WithHttpOK $message
     
@@ -271,6 +270,7 @@ $body = @{"synchronizationMode" = "Incremental" } | ConvertTo-Json
 
 Invoke-RestMethod -Method POST -Uri $restUri -Headers $headers -Body $body
 
+Write-Host "Done executing notification deployment notification Azure Function"
 Stop-WithHttpOK
 
 
