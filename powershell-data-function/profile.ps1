@@ -71,59 +71,36 @@ function Stop-WithHttpOK ($message) {
     exit
 }
 
-function Write-Request ($request) {
-    Write-Host ==============================================================================================================
-    Write-Host Showing Request
-    Write-Host ($request | ConvertTo-Json)
-    Write-Host ==============================================================================================================
-}
+function Write-ItemAsJson {
+    param(
+        [Parameter(Mandatory=$true)]
+        [String] $HeaderMessage,
 
-function Write-ManagedAppVariables() {
-
-    Write-Host ==============================================================================================================
-    Write-Host mIdentity $global:mIdentity
-    Write-Host --------------------------------------------------------------------------------------------------------------
-    Write-Host JSON
-    Write-Host --------------------------------------------------------------------------------------------------------------
-    # Write-Host mApplication ($mApplication | ConvertTo-Json)
-    Write-Host --------------------------------------------------------------------------------------------------------------
-    Write-Host mApplicationResource ($global:mApplicationResource | ConvertTo-Json)
-    Write-Host ==============================================================================================================
-    Write-Host mDataShareAccount ($global:mDataShareAccount | ConvertTo-Json)
-    Write-Host --------------------------------------------------------------------------------------------------------------
-    Write-Host mStorageAccount ($globalmStorageAccount | ConvertTo-Json)
-    Write-Host ==============================================================================================================
-}
-function Write-DataShare ($dataShare) {
-
-    Write-Host ------------------------------------------------------
-    Write-Host "Data Share"
-    Write-Host ------------------------------------------------------
-    Write-Host "dataShare.CreatedBy: $($dataShare.CreatedBy)"
-    Write-Host "dataShare.Description: $($dataShare.Description)"
-    Write-Host "dataShare.Id: $($dataShare.Id)"
-    Write-Host "dataShare.Name: $($dataShare.Name)"
-    Write-Host "dataShare.ProvisioningState: $($dataShare.ProvisioningState)"
-    Write-Host "dataShare.ShareKind: $($dataShare.ShareKind)"
-    Write-Host "dataShare.Type: $($dataShare.Type)"
-    Write-Host ------------------------------------------------------
-
-}
-
-function Write-Invitation ($invitation) {
+        [Parameter(Mandatory=$true)]
+        [System.Object] $Item
+    )
     
-    Write-Host ------------------------------------------------------
-    Write-Host "Invitation"
-    Write-Host ------------------------------------------------------
-    Write-Host "invitation.CreatedBy: $($invitation.CreatedBy)"
-    Write-Host "invitation.Description: $($invitation.Description)"
-    Write-Host "invitation.Id: $($invitation.Id)"
-    Write-Host "invitation.InvitationId: $($invitation.InvitationId)"
-    Write-Host "invitation.InvitationStatus: $($invitation.InvitationStatus)"
-    Write-Host "invitation.Name: $($invitation.Name)"
-    Write-Host "invitation.ProvisioningState: $($invitation.ProvisioningState)"
-    Write-Host "invitation.ShareKind: $($invitation.ShareKind)"
-    Write-Host "invitation.Type: $($invitation.Type)"
-    Write-Host ------------------------------------------------------
+    Write-Host ==============================================================================================================
+    Write-Host $HeaderMessage
+    Write-Host --------------------------------------------------------------------------------------------------------------
+    Write-Host ($Item | ConvertTo-Json)
+    Write-Host ==============================================================================================================
+
+}
+
+function Write-ItemsAsJSON {
+    param(
+        [Parameter(Mandatory=$true)]
+        [String] $HeaderMessage,
+
+        [Parameter(Mandatory=$true)]
+        [System.Collections.Hashtable] $Items
+    )
+    
+    Write-Host ==============================================================================================================
+    Write-Host $HeaderMessage
+    Write-Host --------------------------------------------------------------------------------------------------------------
+    Write-Host ($Items | ConvertTo-Json)
+    Write-Host ==============================================================================================================
 
 }
