@@ -81,6 +81,7 @@ $items = [ordered]@{
     mStorageAccount = $mStorageAccount
     mTenantId = $mTenantId
 }
+
 # Write-ItemsAsJson -HeaderMessage "Managed Application variables" -Items $items
 
 # Creating role assignment on Data Storage account: Storage Blob Data Contributor
@@ -123,9 +124,6 @@ Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
 $pResourceGroupName = (Get-Item -Path Env:WEBSITE_RESOURCE_GROUP).Value
 $websiteOwnerName = (Get-Item -Path Env:WEBSITE_OWNER_NAME).Value
 $pSubscriptionId = ($websiteOwnerName -split "\+")[0]
-
-
-
 
 # connecting to publisher side
 Set-AzContext -SubscriptionId $pSubscriptionId
