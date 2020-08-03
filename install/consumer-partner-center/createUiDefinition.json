@@ -11,8 +11,17 @@
                 "visible": true,
                 "options": {
                     "icon": "Info",
-                    "text": "Resource Groups are logical containers for other resources that will be created, such as a Storage accounts. It's a good idea to name your Resource Group something that reflects the data to be stored in it.\n\nRegions are the geographic locations for the Resource Group and its resources. Not all Regions support all resources. Choose a Region that supports Azure Data Share accounts. Click this information box to find a Region that supports Azure Data Share accounts.\n\nThe applicaiton name is the name provided for the application that manages your data resources.\n\nThe Managed Resource Group is simply the name of the Resource Group that will contain the application.",
+                    "text": "Resource Groups are logical containers for other resources that will be created, such as a Storage accounts. It's a good idea to name your Resource Group something that reflects the data to be stored in it.\n\nRegions are the geographic locations for the Resource Group and its resources. Not all Regions support all resources. Choose a Region that supports Azure Data Share accounts. Click this information box to find a Region that supports Azure Data Share accounts.",
                     "uri": "https://azure.microsoft.com/en-us/global-infrastructure/services/?products=data-share&regions=us-central,us-east,us-east-2,us-north-central,us-south-central,us-west-central,us-west,us-west-2,central-india"
+                }
+            },
+            {
+                "name": "moreInfo2",
+                "type": "Microsoft.Common.InfoBox",
+                "visible": true,
+                "options": {
+                    "icon": "Info",
+                    "text": "Regions are the geographic locations for the Resource Group and its resources. Not all Regions support all resources. Choose a Region that supports Azure Data Share accounts. Click this information box to find a Region that supports Azure Data Share accounts.\n\nThe applicaiton name is the name provided for the application that manages your data resources.\n\nThe Managed Resource Group is simply the name of the Resource Group that will contain the application."
                 }
             }
         ],
@@ -47,7 +56,7 @@
                         }
                     },
                     {
-                        "name": "moreInfo2",
+                        "name": "moreInfo3",
                         "type": "Microsoft.Common.InfoBox",
                         "visible": true,
                         "options": {
@@ -68,6 +77,15 @@
                             "readOnlySystemAssignedIdentity": true
                         },
                         "visible": true
+                    },
+                    {
+                        "name": "moreInfo4",
+                        "type": "Microsoft.Common.InfoBox",
+                        "visible": true,
+                        "options": {
+                            "icon": "Info",
+                            "text": "The above 'System assigned managed identity' is needed to assign permissions to your managed application, but is disabled for change."
+                        }
                     }
                 ]
             }

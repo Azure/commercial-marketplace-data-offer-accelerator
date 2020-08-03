@@ -5,4 +5,5 @@
     'Az' = '3.*'
     'Az.DataShare' = '0.*'
     'Az.ManagedServiceIdentity' = '0.*'
+    'Az.Accounts' = '1.9.0'
 }
