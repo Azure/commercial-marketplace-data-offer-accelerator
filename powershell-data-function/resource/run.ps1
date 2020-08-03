@@ -3,55 +3,54 @@ using namespace System.Net
 # Input bindings are passed in via param block.
 param($Request, $TriggerMetadata)
 
-# Write-Host ==============================================================================================================
-# Write-Host Showing Request.Body
-# Write-Host ==============================================================================================================
-# Write-Host ($Request.Body | ConvertTo-Json)
-# Write-Host ==============================================================================================================
-
-$ErrorActionPreference = 'Stop'
 $DebugPreference = 'Continue'
+$ErrorActionPreference = 'Stop'
+
+# Write-ItemAsJSON -HeaderMessage "Request recieved as a parameter to the function" -Item $Request
+
 
 $provisioningState = $Request.Body.provisioningState
 
+# ensure this a Reqeust we want to handle
 if ($provisioningState -ne "Succeeded") {
     
     $returnMessage = "Exiting without any processing of Azure resources. Request has '$provisioningState' instead of 'Succeeded' provisioning state."
     
-    # log the call
     Write-Host $returnMessage
     
     Stop-WithHttpOK $returnMessage
 }
 
-#==================================================================================
-# Fetching Consumer side details
-#==================================================================================
-$cApplicationId = $Request.Body.applicationId
-$planName = $Request.Body.plan.name
-
-$a = $cApplicationId -split '/'
-$cSubscriptionId = $a[2]
-$cResourceGroupName = $a[4]
-
-Write-Host Consumer Subscription ID: $cSubscriptionId
-Write-Host Consumer Resource Group: $cResourceGroupName
-Write-Host env:MSI_ENDPOINT: $env:MSI_ENDPOINT
-Write-Host env:MSI_SECRET: $env:MSI_SECRET
-
 $cAccessToken = Get-ClientAccessToken
 
 Connect-AzAccount -AccessToken $cAccessToken -AccountId MSI@50342
 
-# get the managed application information
+# Fetching Consumer side details
+$cApplicationId = $Request.Body.applicationId
+$planName = $Request.Body.plan.name
+$a = $cApplicationId -split '/'
+$cSubscriptionId = $a[2]
+$cResourceGroupName = $a[4]
 
+$items = [ordered]@{
+    "env:MSI_ENDPOINT" = $env:MSI_ENDPOINT
+    "env:MSI_SECRET" = $env:MSI_SECRET
+    cApplicationId = $cApplicationId
+    cResourceGroupName = $cResourceGroupName
+    cSubscriptionId = $cSubscriptionId
+    planName = $planName
+}
+# Write-ItemsAsJson -HeaderMessage "Customer-side variables" -Items $items
+
+# get the managed application information
 $mApplication = $null
 
 Try {
     # Sometimes this call fails because the managed application has not completed provisioninng 
     # by the time this function gets called
     $mApplication = Get-AzManagedApplication -ResourceGroupName $cResourceGroupName
-} Catch [Microsoft.PowerShell.Commands.HttpResponseException]{
+}
+Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
     
     $message = "WARNING: Get-AzManagedApplication -ResourceGroupName $cResourceGroupName FAILED"
 
@@ -70,16 +69,22 @@ $mApplicationResource = Get-AzResource -ResourceName $mApplication.Name
 $mResourceGroupId = $mApplication.Properties.managedResourceGroupId
 $mResourceGroupName = ($mResourceGroupId -split '/')[4]
 $mIdentity = $mApplicationResource.Identity.PrincipalId
-
 $mDataShareAccount = Get-AzDataShareAccount -ResourceGroupName $mResourceGroupName
 $mStorageAccount = Get-AzStorageAccount -ResourceGroupName $mResourceGroupName
 $mTenantId = $mApplicationResource.Identity.TenantId
 
-# Write-Host ==============================================================================================================
-# Write-Host "on Data Storage account $($mStorageAccount.StorageAccountName)"
-# Write-Host "Creating role assignment on Data Storage account: Storage Blob Data Contributor"
-# Write-Host ==============================================================================================================
+$items = [ordered]@{
+    mApplicationResource = $mApplicationResource
+    mDataShareAccount = $mDataShareAccount
+    mIdentity = $mIdentity
+    mResourceGroupId = $mResourceGroupId
+    mResourceGroupName = $mResourceGroupName
+    mStorageAccount = $mStorageAccount
+    mTenantId = $mTenantId
+}
+# Write-ItemsAsJson -HeaderMessage "Managed Application variables" -Items $items
 
+# Creating role assignment on Data Storage account: Storage Blob Data Contributor
 $restUri = "https://management.azure.com$($mStorageAccount.Id)/providers/Microsoft.Authorization/roleAssignments/$(New-Guid)?api-version=2019-04-01-preview"
 
 $headers = @{
@@ -115,25 +120,17 @@ Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
     }
 }
 
-#==================================================================================
 # Fetching Publisher-side details
-#==================================================================================
 $pResourceGroupName = (Get-Item -Path Env:WEBSITE_RESOURCE_GROUP).Value
 $websiteOwnerName = (Get-Item -Path Env:WEBSITE_OWNER_NAME).Value
 $pSubscriptionId = ($websiteOwnerName -split "\+")[0]
-
-Write-Host "Publisher Resource Group Name: $pResourceGroupName"
-Write-Host "Publisher Subscription ID: $pSubscriptionId"
 
 # connecting to publisher side
 Set-AzContext -SubscriptionId $pSubscriptionId
 
 $pDataShareAccountName = (Get-AzDataShareAccount -ResourceGroupName $pResourceGroupName).Name
-Write-Host "Publisher Data Share Account name: $pDataShareAccountName"
 
-# Write-Host =======================================================================================
-# Write-Host "Get the appropriate publisher Data Share"
-# Write-Host =======================================================================================
+# Get the appropriate publisher Data Share
 $pDataShare = Get-AzDataShare -Name $planName -ResourceGroupName $pResourceGroupName -AccountName $pDataShareAccountName -ErrorVariable errorInfo
 
 if (!$pDataShare) {
@@ -152,13 +149,17 @@ if (!$pDataShare) {
     exit
 }
 
-# Write-Host Send an invite if one hasn't already been sent
+# Write-ItemAsJSON -HeaderMessage "The Data Share we are synching" -Item $pDataShare
+
+# Send an invite if one hasn't already been sent
 $invitation = Get-AzDataShareInvitation -AccountName $pDataShareAccountName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name
 if ($invitation) {
     Remove-AzDataShareInvitation -AccountName $pDataShareAccountName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name -Name $invitation.Name
 }
 $invitationName = "$($pDataShare.Name)-Invitation"
 $invitation = New-AzDataShareInvitation -AccountName $pDataShareAccountName -Name $invitationName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name -TargetObjectId $mIdentity -TargetTenantId $mTenantId
+
+# Write-ItemAsJSON -HeaderMessage "The Invitation" -Item $invitation
 
 # suppress version warnings
 Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
@@ -178,7 +179,7 @@ if ($shareDataSets.Count -eq 0) {
 
     exit
 }
-    
+
 Set-AzContext -SubscriptionId $cSubscriptionId
 
 # Connect as the Managed Application
@@ -197,10 +198,7 @@ $mAppToken = $response.value.access_token
 
 Connect-AzAccount -AccessToken $mAppToken -AccountId MSI@50342
 
-# Write-Host =======================================================================================
-# Write-Host Create new Share Subscription
-# Write-Host =======================================================================================
-
+# Create new Share Subscription
 $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/?api-version=2019-11-01"
 
 $headers = @{
@@ -235,10 +233,7 @@ Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
     }
 }
 
-# Write-Host =======================================================================================
-# Write-Host "Mapping Data Sets"
-# Write-Host =======================================================================================
-
+# Mapping Data Sets
 foreach ($dataSet in $shareDataSets) {
     
     Write-Host "Mapping Data Set: $($dataSet.Name)"
@@ -269,9 +264,7 @@ foreach ($dataSet in $shareDataSets) {
     Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
 }
 
-# Write-Host =======================================================================================
-# Write-Host "Start synchronization"
-# Write-Host =======================================================================================
+Write-Host "Start synchronization"
 
 $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/Synchronize?api-version=2019-11-01"
 $body = @{"synchronizationMode" = "Incremental" } | ConvertTo-Json
@@ -280,33 +273,41 @@ Invoke-RestMethod -Method POST -Uri $restUri -Headers $headers -Body $body
 
 Stop-WithHttpOK
 
-# Write-Host =======================================================================================
-# Write-Host "Create the client side sync trigger"
-# Write-Host =======================================================================================
-
-# Try {
-
-#     Get-AzDataShareTrigger -ResourceGroupName $pResourceGroupName -AccountName $pDataShareAccountName -ShareSubscriptionName $pSubscriptionId
-
-# } catch {
-    
-#     $body = "Failed to fetch Trigger from publisher or create new trigger on client"
-    
-#     Write-Host $body
-#     Write-Host $_.Exception.Message
-    
-#     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-#         StatusCode = 404
-#         Body       = $body
-#     })
-
-#     exit
-# }
-
-# New-AzDataShareTrigger -ResourceGroupName $mResourceGroupName -AccountName $mDataShareAccount.Name -ShareSubscriptionName $planName -Name "$($mDataShareAccount.Name)Trigger" -RecurrenceInterval $synchRecurranceInterval -SynchronizationTime $synchTime
-
 
 # 1. Create share subscription    
 # 2. Create dataset mappings
 # 3. Start the synch of data
 # 4. Create a client trigger to update at the same time and interval as the publisher's trigger
+
+# Write-Host "Creating client side Trigger"
+# New-AzDataShareTrigger  -ResourceGroupName $mResourceGroupName `
+#                         -AccountName $mDataShareAccount.Name `
+#                         -ShareSubscriptionName $planName `
+#                         -Name $pTrigger.Name `
+#                         -RecurrenceInterval $pTrigger.RecurrenceInterval `
+#                         -SynchronizationTime $pTrigger.SynchronizationTime
+
+
+# Get the publisher side sync trigger
+# $pTrigger = $null
+
+# Try {
+
+#     $pTrigger = Get-AzDataShareTrigger -ResourceGroupName $pResourceGroupName -AccountName $pDataShareAccountName -ShareSubscriptionName $planName
+# }
+# catch {
+    
+#     $body = "Failed to fetch Trigger from publisher"
+    
+#     Write-Host $body
+#     Write-Host $_.Exception.Message
+    
+#     # Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+#     #         StatusCode = 404
+#     #         Body       = $body
+#     #     })
+
+#     # exit
+# }
+
+# Write-ItemAsJSON -MessageHeader "Trigger infomration" -Item $pTrigger

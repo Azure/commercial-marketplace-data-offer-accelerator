@@ -63,11 +63,11 @@
                             "systemAssignedIdentity": "OnOnly"
                         },
                         "options": {
-                            "hideSystemAssignedIdentity": true,
+                            "hideSystemAssignedIdentity": false,
                             "hideUserAssignedIdentity": true,
                             "readOnlySystemAssignedIdentity": true
                         },
-                        "visible": false
+                        "visible": true
                     }
                 ]
             }

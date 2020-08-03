@@ -350,5 +350,8 @@ MigrationBackup/
 .ionide/
 
 # Mac OS File System
+.DS_Store/
+__MACOSX/
+# A customized test file
+*/InvokeFunctionTest.ps1
 .DS_Store
-powershell-data-function-test/InvokeFunctionDavid.ps1
