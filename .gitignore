@@ -4,8 +4,6 @@
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
 # vscode config files
-.vscode
-
 
 # User-specific files
 *.rsuser
@@ -360,3 +358,7 @@ __MACOSX/
 # A customized test file
 */InvokeFunctionTest.ps1
 **/.DS_Store
+.vscode/extensions.json
+.vscode/launch.json
+.vscode/settings.json
+.vscode/tasks.json
