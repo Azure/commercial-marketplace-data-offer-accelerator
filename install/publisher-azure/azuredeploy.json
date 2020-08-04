@@ -5,7 +5,7 @@
         "ResourceNamePrefix": {
             "type": "String",
             "metadata": {
-                "description": "This prefix will be used for all the resources created by this deployment"
+                "description": "This prefix will be used for all the resources created by this template."
             }
         },
         "ResourceLocation": {
@@ -23,7 +23,7 @@
                 "UK South"
             ],
             "metadata": {
-                "description": "Please select a location where Azure Data Share Service is available. Other resources will also be created in the same region. It is recommended to select the same location for the resource group."
+                "description": "Azure Data Share service is available in these locations. Other resources will be created in the same region. It is recommended to use the same location for the resource group."
             }
         },
         "AppServicePlan": {
@@ -36,7 +36,7 @@
                 "S1"
             ],
             "metadata": {
-                "description": "The function is resposible to configure the consumer Data Share Account, data set mappings and synchronization settings. Recommneded plan is B1."
+                "description": "The function is resposible to configure the consumer Data Share Account, data set mappings and synchronization settings etc. Recommneded plan is B1."
             }
         }
     },
