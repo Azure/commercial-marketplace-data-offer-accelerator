@@ -26,13 +26,14 @@ This ARM template requires a resource name prefix and a location where Azure Dat
 
 ### Deploy this to your Azure subscription
 
-#### Deploy using Azure portal -
+#### Deploy using Azure portal
+
 [![Deploy to Azure](https://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fcommercial-marketplace-data-offers%2Fmain%2Finstall%2Fpublisher-azure%2Fazuredeploy.json)
 
 #### Deploy using PowerShell
 
 
-```
+```powershell
 $rgName="<your resource group name>"
 $location="<region with Azure Data Share availability>"
 $templateUri="https://raw.githubusercontent.com/Azure/commercial-marketplace-data-offers/main/install/publisher-azure/azuredeploy.json"
@@ -49,7 +50,7 @@ New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $template
 
 #### Deploy using Azure CLI
 
-```
+```bash
 rgName="<your resource group name>"
 location="<region with Azure Data Share availability>"
 templateUri="https://raw.githubusercontent.com/Azure/commercial-marketplace-data-offers/main/install/publisher-azure/azuredeploy.json"
