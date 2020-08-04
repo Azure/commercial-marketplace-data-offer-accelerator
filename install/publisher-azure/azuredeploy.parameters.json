@@ -4,6 +4,12 @@
     "parameters": {
         "ResourceNamePrefix": {
             "value": ""
+        },
+        "ResourceLocation": {
+            "value": ""
+        },
+        "AppServicePlan": {
+            "value": ""
         }
     }
 }

@@ -26,7 +26,46 @@ This ARM template requires a resource name prefix and a location where Azure Dat
 
 ### Deploy this to your Azure subscription
 
+#### Deploy using Azure portal -
 [![Deploy to Azure](https://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fcommercial-marketplace-data-offers%2Fmain%2Finstall%2Fpublisher-azure%2Fazuredeploy.json)
 
+#### Deploy using PowerShell
 
-You can also deploy this template using PowerShell or Azure CLI.
+
+```
+$rgName="<your resource group name>"
+$location="<region with Azure Data Share availability>"
+$templateUri="https://raw.githubusercontent.com/Azure/commercial-marketplace-data-offers/main/install/publisher-azure/azuredeploy.json"
+
+$resourceNamePrefix="<prefix for resources>"
+$appServicePlan="B1"
+
+# Create a resource group
+New-AzResourceGroup -Name $rgName -Location $location
+
+# Deploy the template
+New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $templateUri -ResourceNamePrefix $resourceNamePrefix -ResourceLocation $location -AppServicePlan $appServicePlan
+```
+
+#### Deploy using Azure CLI
+
+```
+rgName="<your resource group name>"
+location="<region with Azure Data Share availability>"
+templateUri="https://raw.githubusercontent.com/Azure/commercial-marketplace-data-offers/main/install/publisher-azure/azuredeploy.json"
+
+resourceNamePrefix="<prefix for resources>"
+appServicePlan="B1"
+
+# Create a resource group
+az group create --name $rgName --location $location
+
+# Deploy the template
+az deployment group create \
+  --name ExampleDeployment \
+  --resource-group $rgName \
+  --template-file $templateUri \
+  --parameters ResourceNamePrefix=$resourceNamePrefix ResourceLocation=$location AppServicePlan=$appServicePlan
+```
+
+

@@ -62,19 +62,6 @@
             "properties": {}
         },
         {
-            "type": "Microsoft.Storage/storageAccounts/providers/roleAssignments",
-            "apiVersion": "2018-09-01-preview",
-            "name": "[concat(variables('DataShareStorageAccount'), '/Microsoft.Authorization/', guid(uniqueString(variables('DataShareStorageAccount'))))]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', variables('DataShareStorageAccount'))]",
-                "[resourceId('Microsoft.DataShare/accounts', variables('DataShareAccountName'))]"
-            ],
-            "properties": {
-                "roleDefinitionId": "[variables('StorageBlobDataReader')]",
-                "principalId": "[reference(concat('Microsoft.DataShare/accounts/', variables('DataShareAccountName')), '2019-11-01', 'Full').identity.principalId]"
-            }
-        },
-        {
             "type": "Microsoft.Storage/storageAccounts",
             "name": "[variables('FunctionStorageName')]",
             "apiVersion": "2019-06-01",
@@ -173,10 +160,6 @@
         "DataShareAccountName": {
             "type": "string",
             "value": "[variables('DataShareAccountName')]"
-        },
-        "DataShareStorageName": {
-            "type": "string",
-            "value": "[variables('DataShareStorageAccount')]"
         },
         "NotificationEndpointURL": {
             "type": "string",
