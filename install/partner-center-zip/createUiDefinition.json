@@ -3,9 +3,30 @@
     "handler": "Microsoft.Azure.CreateUIDef",
     "version": "0.1.2-preview",
     "parameters": {
-        "basics": [
-            {},
-            {
+        "config": {
+            "basics": {
+                "description": "The basic information needed to create your Data Share resources.",
+                "location": {
+                    "label": "Deploy resources to ths Region",
+                    "toolTip": "All data consumer services will be deployed to this Region.",
+                    "resourceTypes": ["Microsoft.DataShare"],
+                    "allowedValues": [
+                        "australiaeast",
+                        "eastus",
+                        "eastus2",
+                        "northeurope",
+                        "southcentralus",
+                        "southeastasia",
+                        "uksouth",
+                        "westcentralus",
+                        "westeurope",
+                        "westus2"
+                    ],
+                    "visible": true
+                }
+            }
+        },
+        "basics": [{
                 "name": "moreInfo1",
                 "type": "Microsoft.Common.InfoBox",
                 "visible": true,
@@ -25,71 +46,68 @@
                 }
             }
         ],
-        "steps": [
-            {
-                "name": "storageConfig",
-                "label": "Storage settings",
-                "subLabel": {
-                    "preValidation": "Configure the infrastructure settings",
-                    "postValidation": "Done"
-                },
-                "bladeTitle": "Storage settings",
-                "elements": [
-                    {
-                        "count": 1,
-                        "name": "storageAccounts",
-                        "type": "Microsoft.Storage.MultiStorageAccountCombo",
-                        "visible": true,
-                        "label": {
-                            "prefix": "Storage account name prefix",
-                            "type": "Storage account type"
-                        },
-                        "defaultValue": {
-                            "type": "Standard_LRS"
-                        },
-                        "constraints": {
-                            "allowedTypes": [
-                                "Premium_LRS",
-                                "Standard_LRS",
-                                "Standard_GRS"
-                            ]
-                        }
+        "steps": [{
+            "name": "storageConfig",
+            "label": "Storage settings",
+            "subLabel": {
+                "preValidation": "Configure the infrastructure settings",
+                "postValidation": "Done"
+            },
+            "bladeTitle": "Storage settings",
+            "elements": [{
+                    "count": 1,
+                    "name": "storageAccounts",
+                    "type": "Microsoft.Storage.MultiStorageAccountCombo",
+                    "visible": true,
+                    "label": {
+                        "prefix": "Storage account name prefix",
+                        "type": "Storage account type"
                     },
-                    {
-                        "name": "moreInfo3",
-                        "type": "Microsoft.Common.InfoBox",
-                        "visible": true,
-                        "options": {
-                            "icon": "Info",
-                            "text": "The Storage account name prefix sets the first part of the name of the Azure Storage account to be created. The prefix will have an automatically generated string appended to it to ensure the storage account name is unique across all of Azure."
-                        }
+                    "defaultValue": {
+                        "type": "Standard_LRS"
                     },
-                    {
-                        "name": "appIdentity",
-                        "type": "Microsoft.ManagedIdentity.IdentitySelector",
-                        "label": "Managed Identity Configuration",
-                        "defaultValue": {
-                            "systemAssignedIdentity": "OnOnly"
-                        },
-                        "options": {
-                            "hideSystemAssignedIdentity": false,
-                            "hideUserAssignedIdentity": true,
-                            "readOnlySystemAssignedIdentity": true
-                        },
-                        "visible": true
-                    },
-                    {
-                        "name": "moreInfo4",
-                        "type": "Microsoft.Common.InfoBox",
-                        "visible": true,
-                        "options": {
-                            "icon": "Info",
-                            "text": "The above 'System assigned managed identity' is needed to assign permissions to your managed application, but is disabled for change."
-                        }
+                    "constraints": {
+                        "allowedTypes": [
+                            "Premium_LRS",
+                            "Standard_LRS",
+                            "Standard_GRS"
+                        ]
                     }
-                ]
-            }
-        ],
+                },
+                {
+                    "name": "moreInfo3",
+                    "type": "Microsoft.Common.InfoBox",
+                    "visible": true,
+                    "options": {
+                        "icon": "Info",
+                        "text": "The Storage account name prefix sets the first part of the name of the Azure Storage account to be created. The prefix will have an automatically generated string appended to it to ensure the storage account name is unique across all of Azure."
+                    }
+                },
+                {
+                    "name": "appIdentity",
+                    "type": "Microsoft.ManagedIdentity.IdentitySelector",
+                    "label": "Managed Identity Configuration",
+                    "defaultValue": {
+                        "systemAssignedIdentity": "OnOnly"
+                    },
+                    "options": {
+                        "hideSystemAssignedIdentity": false,
+                        "hideUserAssignedIdentity": true,
+                        "readOnlySystemAssignedIdentity": true
+                    },
+                    "visible": true
+                },
+                {
+                    "name": "moreInfo4",
+                    "type": "Microsoft.Common.InfoBox",
+                    "visible": true,
+                    "options": {
+                        "icon": "Info",
+                        "text": "The above 'System assigned managed identity' is needed to assign permissions to your managed application, but is disabled for change."
+                    }
+                }
+            ]
+        }],
         "outputs": {
             "storageAccountNamePrefix": "[steps('storageConfig').storageAccounts.prefix]",
             "storageAccountType": "[steps('storageConfig').storageAccounts.type]",
