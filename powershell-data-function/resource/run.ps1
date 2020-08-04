@@ -81,7 +81,6 @@ $items = [ordered]@{
     mStorageAccount = $mStorageAccount
     mTenantId = $mTenantId
 }
-
 # Write-ItemsAsJson -HeaderMessage "Managed Application variables" -Items $items
 
 # Creating role assignment on Data Storage account: Storage Blob Data Contributor
