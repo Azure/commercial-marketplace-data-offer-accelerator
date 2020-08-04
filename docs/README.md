@@ -1,6 +1,12 @@
+<<<<<<< HEAD
 # Data Offer resources and instructions
 
 Here are instructions and helpful resources to get you up and running to publish your Data Offer on the Azure Marketplace and to understand the purchase experience.
+=======
+# Data Offer Resources and Instructions
+
+Below are instructions and helpful resources to get you up and running to publish your Data Offer on the Azure Marketplace and to understand the purchase experience.
+>>>>>>> starr
 
 1. [Logical architecure overview](Architecture.md)
 1. [Deploy publisher resources](PublisherDeployToAzure.md)
