@@ -2,13 +2,13 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "DataShareName": {
+        "ResourceNamePrefix": {
             "type": "String",
             "metadata": {
-                "description": "Name of the Data Share Account that will host your data shares"
+                "description": "This prefix will be used for all the resources created by this deployment"
             }
         },
-        "DataShareAccountLocation": {
+        "ResourceLocation": {
             "type": "string",
             "defaultValue": "East US",
             "allowedValues": [
@@ -21,33 +21,36 @@
                 "Southeast Asia",
                 "South Central US",
                 "UK South"
-            ]
+            ],
+            "metadata": {
+                "description": "Please select a location where Azure Data Share Service is available. Other resources will also be created in the same region. It is recommended to select the same location for the resource group."
+            }
+        },
+        "AppServicePlan": {
+            "type": "string",
+            "defaultValue": "B1",
+            "allowedValues": [
+                "F1",
+                "D1",
+                "B1",
+                "S1"
+            ],
+            "metadata": {
+                "description": "The function is resposible to configure the consumer Data Share Account, data set mappings and synchronization settings. Recommneded plan is B1."
+            }
         }
     },
     "variables": {
-        "DataShareAccountName": "[substring(concat(parameters('DataShareName'), 'acct', uniqueString(resourceGroup().id)), 0, 23)]",
-        "Location": "[parameters('DataShareAccountLocation')]",
-        "DataShareStorageAccount": "[substring(concat(parameters('DataShareName'), 'acctstorage', uniqueString(resourceGroup().id)), 0, 23)]",
-        "StorageBlobDataReader": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1')]",
-        "AppServicePlanName": "[substring(concat(parameters('DataShareName'), 'function', uniqueString(resourceGroup().id)), 0, 23)]",
+        "DataShareAccountName": "[substring(concat(parameters('ResourceNamePrefix'), 'acct', uniqueString(resourceGroup().id)), 0, 23)]",
+        "Location": "[parameters('ResourceLocation')]",
+        "AppServicePlanName": "[substring(concat(parameters('ResourceNamePrefix'), 'function', uniqueString(resourceGroup().id)), 0, 23)]",
         "PackageURI": "[uri(deployment().properties.templateLink.uri, 'functionapp/functionapp.zip')]",
-        "FunctionStorageName": "[substring(concat(parameters('DataShareName'), 'function', uniqueString(resourceGroup().id)), 0, 23)]",
-        "FunctionAppName": "[substring(concat(parameters('DataShareName'), 'function', uniqueString(resourceGroup().id)), 0, 23)]",
+        "FunctionStorageName": "[substring(concat(parameters('ResourceNamePrefix'), 'function', uniqueString(resourceGroup().id)), 0, 23)]",
+        "FunctionAppName": "[substring(concat(parameters('ResourceNamePrefix'), 'function', uniqueString(resourceGroup().id)), 0, 23)]",
         "ResourceGroupRoleAssignmentId": "[guid(concat(resourceGroup().id, 'reader'))]",
         "ReaderRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]"
     },
     "resources": [
-        {
-            "type": "Microsoft.Storage/storageAccounts",
-            "name": "[variables('DataShareStorageAccount')]",
-            "apiVersion": "2019-06-01",
-            "location": "[variables('location')]",
-            "kind": "Storage",
-            "sku": {
-                "name": "Standard_LRS"
-            }
-        },
-
         {
             "type": "Microsoft.DataShare/accounts",
             "apiVersion": "2019-11-01",
@@ -87,7 +90,7 @@
             "name": "[variables('AppServicePlanName')]",
             "location": "[variables('Location')]",
             "sku": {
-                "name": "B1"
+                "name": "[parameters('AppServicePlan')]"
             },
             "properties": {
                 "name": "[variables('AppServicePlanName')]"
