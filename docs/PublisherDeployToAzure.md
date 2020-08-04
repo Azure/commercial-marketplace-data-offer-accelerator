@@ -1,4 +1,4 @@
-# Azure Data Share Service ARM Template
+# Deploy Data Publisher Resources to Azure
 
 This folder contains the technical artifacts that you can use to create the Azure services in your Azure tenant as a publisher.
 
