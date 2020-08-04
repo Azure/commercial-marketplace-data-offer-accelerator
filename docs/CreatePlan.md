@@ -1,7 +1,11 @@
 # Creating a Partner Center Plan's Technical Configuration
 
-The instructions here are unique to data offers because each Plan ID for an Offer muest match a Data Share name exactly. More details below.
+Watch this video to see how to properly configure an Offer's Plan in the Partner Center portal. The video shows how to configure a Plan's technical configuration. The instructions here are unique to data offers in the Azure Marketplace.
 
+<a href="#"><img src="./images/Video.png" width="50" style="display:inline-block;"></a>
+
+
+---
 
 Each Plan for your Offer in Partner Center must meet certain technical criteria.
 
