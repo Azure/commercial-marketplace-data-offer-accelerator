@@ -26,14 +26,14 @@
                 }
             }
         },
-        "basics": [{
+        "basics": [
+            {
                 "name": "moreInfo1",
                 "type": "Microsoft.Common.InfoBox",
                 "visible": true,
                 "options": {
                     "icon": "Info",
-                    "text": "Resource Groups are logical containers for other resources that will be created, such as a Storage accounts. It's a good idea to name your Resource Group something that reflects the data to be stored in it.\n\nRegions are the geographic locations for the Resource Group and its resources. Not all Regions support all resources. Choose a Region that supports Azure Data Share accounts. Click this information box to find a Region that supports Azure Data Share accounts.",
-                    "uri": "https://azure.microsoft.com/en-us/global-infrastructure/services/?products=data-share&regions=us-central,us-east,us-east-2,us-north-central,us-south-central,us-west-central,us-west,us-west-2,central-india"
+                    "text": "Resource Groups are logical containers for other resources that will be created, such as a Storage accounts. It's a good idea to name your Resource Group something that reflects the data to be stored in it.\n\nRegions are the geographic locations for the Resource Group and its resources."
                 }
             },
             {
