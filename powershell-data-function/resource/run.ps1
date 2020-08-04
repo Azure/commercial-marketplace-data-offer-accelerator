@@ -22,7 +22,6 @@ if ($provisioningState -ne "Succeeded") {
 }
 
 $cAccessToken = Get-ClientAccessToken
-
 Connect-AzAccount -AccessToken $cAccessToken -AccountId MSI@50342
 
 # Fetching Consumer side details
@@ -125,6 +124,9 @@ $pResourceGroupName = (Get-Item -Path Env:WEBSITE_RESOURCE_GROUP).Value
 $websiteOwnerName = (Get-Item -Path Env:WEBSITE_OWNER_NAME).Value
 $pSubscriptionId = ($websiteOwnerName -split "\+")[0]
 
+
+
+
 # connecting to publisher side
 Set-AzContext -SubscriptionId $pSubscriptionId
 
@@ -180,6 +182,8 @@ if ($shareDataSets.Count -eq 0) {
     exit
 }
 
+# TODO: get the pub side trigger here
+
 Set-AzContext -SubscriptionId $cSubscriptionId
 
 # Connect as the Managed Application
@@ -220,10 +224,9 @@ Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
     
     if ($_.Exception.Response.StatusCode -eq 409) {
         
-        $message = "WARNING: Data Share Subscription '$planName' already assigned"
+        $message = "WARNING: Data Share Subscription '$planName' already assigned. Existing with HTTP 200 to stop retries."
         
-        Write-Host $message -ForegroundColor Yellow
-        Write-Host "Exiting with HTTP Code 200" -ForegroundColor Yellow
+        Write-Host $message
         
         Stop-WithHttpOK $message
     
@@ -271,6 +274,9 @@ $body = @{"synchronizationMode" = "Incremental" } | ConvertTo-Json
 
 Invoke-RestMethod -Method POST -Uri $restUri -Headers $headers -Body $body
 
+# TODO: New up the client side trigger here
+
+Write-Host "Done executing notification deployment notification Azure Function"
 Stop-WithHttpOK
 
 

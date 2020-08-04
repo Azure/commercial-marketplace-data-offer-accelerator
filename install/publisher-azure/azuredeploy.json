@@ -41,14 +41,25 @@
         }
     },
     "variables": {
+<<<<<<< HEAD
         "DataShareAccountName": "[substring(concat(parameters('ResourceNamePrefix'), 'acct', uniqueString(resourceGroup().id)), 0, 23)]",
         "Location": "[parameters('ResourceLocation')]",
         "AppServicePlanName": "[substring(concat(parameters('ResourceNamePrefix'), 'function', uniqueString(resourceGroup().id)), 0, 23)]",
         "PackageURI": "[uri(deployment().properties.templateLink.uri, 'functionapp/functionapp.zip')]",
         "FunctionStorageName": "[substring(concat(parameters('ResourceNamePrefix'), 'function', uniqueString(resourceGroup().id)), 0, 23)]",
         "FunctionAppName": "[substring(concat(parameters('ResourceNamePrefix'), 'function', uniqueString(resourceGroup().id)), 0, 23)]",
+=======
+        "AppServicePlanName": "[substring(concat(parameters('DataShareName'), 'function', uniqueString(resourceGroup().id)), 0, 23)]",
+        "DataShareAccountName": "[substring(concat(parameters('DataShareName'), 'acct', uniqueString(resourceGroup().id)), 0, 23)]",
+        "DataShareStorageAccount": "[substring(concat(parameters('DataShareName'), 'acctstorage', uniqueString(resourceGroup().id)), 0, 23)]",
+        "FunctionAppName": "[substring(concat(parameters('DataShareName'), 'function', uniqueString(resourceGroup().id)), 0, 23)]",
+        "FunctionStorageName": "[substring(concat(parameters('DataShareName'), 'function', uniqueString(resourceGroup().id)), 0, 23)]",
+        "Location": "[parameters('DataShareAccountLocation')]",
+        "PackageURI": "[uri(deployment().properties.templateLink.uri, 'functionapp/functionapp.zip')]",
+        "ReaderRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
+>>>>>>> 5e5afc4e11c0c079d11367898b1a51f7fb3bcec5
         "ResourceGroupRoleAssignmentId": "[guid(concat(resourceGroup().id, 'reader'))]",
-        "ReaderRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]"
+        "StorageBlobDataReader": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1')]"
     },
     "resources": [
         {

@@ -3,6 +3,10 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# vscode config files
+.vscode
+
+
 # User-specific files
 *.rsuser
 *.suo
@@ -352,6 +356,7 @@ MigrationBackup/
 # Mac OS File System
 .DS_Store/
 __MACOSX/
+
 # A customized test file
 */InvokeFunctionTest.ps1
-.DS_Store
+**/.DS_Store
