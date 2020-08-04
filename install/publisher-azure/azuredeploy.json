@@ -48,7 +48,7 @@
         "Location": "[parameters('ResourceLocation')]",
         "PackageURI": "[uri(deployment().properties.templateLink.uri, 'functionapp/functionapp.zip')]",
         "ReaderRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
-        "ResourceGroupRoleAssignmentId": "[guid(concat(resourceGroup().id, 'reader'))]",
+        "ResourceGroupRoleAssignmentId": "[guid(concat(resourceGroup().id, 'reader'))]"
     },
     "resources": [
         {

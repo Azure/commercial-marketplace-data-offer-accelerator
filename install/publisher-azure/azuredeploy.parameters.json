@@ -3,13 +3,13 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "ResourceNamePrefix": {
-            "value": ""
+            "value": "datashare"
         },
         "ResourceLocation": {
-            "value": ""
+            "value": "East US"
         },
         "AppServicePlan": {
-            "value": ""
+            "value": "B1"
         }
     }
 }
