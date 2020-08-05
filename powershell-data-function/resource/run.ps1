@@ -276,8 +276,10 @@ Invoke-RestMethod -Method POST -Uri $restUri -Headers $headers -Body $body
 
 # TODO: New up the client side trigger here
 
-Write-Host "Done executing notification deployment notification Azure Function"
-Stop-WithHttpOK
+$message = "Request succeeded. Data sync in progress."
+
+Write-Host $message
+Stop-WithHttpOK  $message
 
 
 # 1. Create share subscription    
