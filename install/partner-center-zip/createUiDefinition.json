@@ -3,93 +3,91 @@
     "handler": "Microsoft.Azure.CreateUIDef",
     "version": "0.1.2-preview",
     "parameters": {
-        "basics": [
-            {},
-            {
-                "name": "moreInfo1",
-                "type": "Microsoft.Common.InfoBox",
-                "visible": true,
-                "options": {
-                    "icon": "Info",
-                    "text": "Resource Groups are logical containers for other resources that will be created, such as a Storage accounts. It's a good idea to name your Resource Group something that reflects the data to be stored in it.\n\nRegions are the geographic locations for the Resource Group and its resources. Not all Regions support all resources. Choose a Region that supports Azure Data Share accounts. Click this information box to find a Region that supports Azure Data Share accounts.",
-                    "uri": "https://azure.microsoft.com/en-us/global-infrastructure/services/?products=data-share&regions=us-central,us-east,us-east-2,us-north-central,us-south-central,us-west-central,us-west,us-west-2,central-india"
+        "config": {
+            "basics": {
+                "location": {
+                    "label": "Location",
+                    "toolTip": "Regions to deploy publisher resources",
+                    "resourceTypes": ["Microsoft.DataShare/accounts"],
+                    "allowedValues": [
+                        "Australia East",
+                        "East US 2",
+                        "East US",
+                        "North Europe",
+                        "South Central US",
+                        "Southeast Asia",
+                        "UK South",
+                        "West Europe",
+                        "West US 2"
+                    ],
+                    "visible": true
                 }
+            }
+        },
+        "basics": [],
+        "steps": [{
+            "name": "storageConfig",
+            "label": "Storage settings",
+            "subLabel": {
+                "preValidation": "Configure the infrastructure settings",
+                "postValidation": "Done"
             },
-            {
-                "name": "moreInfo2",
-                "type": "Microsoft.Common.InfoBox",
-                "visible": true,
-                "options": {
-                    "icon": "Info",
-                    "text": "Regions are the geographic locations for the Resource Group and its resources. Not all Regions support all resources. Choose a Region that supports Azure Data Share accounts. Click this information box to find a Region that supports Azure Data Share accounts.\n\nThe applicaiton name is the name provided for the application that manages your data resources.\n\nThe Managed Resource Group is simply the name of the Resource Group that will contain the application."
-                }
-            }
-        ],
-        "steps": [
-            {
-                "name": "storageConfig",
-                "label": "Storage settings",
-                "subLabel": {
-                    "preValidation": "Configure the infrastructure settings",
-                    "postValidation": "Done"
-                },
-                "bladeTitle": "Storage settings",
-                "elements": [
-                    {
-                        "count": 1,
-                        "name": "storageAccounts",
-                        "type": "Microsoft.Storage.MultiStorageAccountCombo",
-                        "visible": true,
-                        "label": {
-                            "prefix": "Storage account name prefix",
-                            "type": "Storage account type"
-                        },
-                        "defaultValue": {
-                            "type": "Standard_LRS"
-                        },
-                        "constraints": {
-                            "allowedTypes": [
-                                "Premium_LRS",
-                                "Standard_LRS",
-                                "Standard_GRS"
-                            ]
-                        }
-                    },
-                    {
-                        "name": "moreInfo3",
-                        "type": "Microsoft.Common.InfoBox",
-                        "visible": true,
-                        "options": {
-                            "icon": "Info",
-                            "text": "The Storage account name prefix sets the first part of the name of the Azure Storage account to be created. The prefix will have an automatically generated string appended to it to ensure the storage account name is unique across all of Azure."
-                        }
-                    },
-                    {
-                        "name": "appIdentity",
-                        "type": "Microsoft.ManagedIdentity.IdentitySelector",
-                        "label": "Managed Identity Configuration",
-                        "defaultValue": {
-                            "systemAssignedIdentity": "OnOnly"
-                        },
-                        "options": {
-                            "hideSystemAssignedIdentity": false,
-                            "hideUserAssignedIdentity": true,
-                            "readOnlySystemAssignedIdentity": true
-                        },
-                        "visible": true
-                    },
-                    {
-                        "name": "moreInfo4",
-                        "type": "Microsoft.Common.InfoBox",
-                        "visible": true,
-                        "options": {
-                            "icon": "Info",
-                            "text": "The above 'System assigned managed identity' is needed to assign permissions to your managed application, but is disabled for change."
-                        }
+            "bladeTitle": "Storage settings",
+            "elements": [
+                {
+                    "name": "moreInfo3",
+                    "type": "Microsoft.Common.InfoBox",
+                    "visible": true,
+                    "options": {
+                        "icon": "Info",
+                        "text": "The Storage account name prefix sets the first part of the name of the Azure Storage account to be created."
                     }
-                ]
-            }
-        ],
+                },
+                {
+                    "count": 1,
+                    "name": "storageAccounts",
+                    "type": "Microsoft.Storage.MultiStorageAccountCombo",
+                    "visible": true,
+                    "label": {
+                        "prefix": "Storage account name prefix",
+                        "type": "Storage account type"
+                    },
+                    "defaultValue": {
+                        "type": "Standard_LRS"
+                    },
+                    "constraints": {
+                        "allowedTypes": [
+                            "Premium_LRS",
+                            "Standard_LRS",
+                            "Standard_GRS"
+                        ]
+                    }
+                },
+                {
+                    "name": "moreInfo4",
+                    "type": "Microsoft.Common.InfoBox",
+                    "visible": true,
+                    "options": {
+                        "icon": "Info",
+                        "text": "The below 'System assigned managed identity' is needed to assign permissions to your new application, but is disabled for change."
+                    }
+                },
+                {
+                    "name": "appIdentity",
+                    "type": "Microsoft.ManagedIdentity.IdentitySelector",
+                    "label": "Managed Identity Configuration",
+                    "defaultValue": {
+                        "systemAssignedIdentity": "OnOnly"
+                    },
+                    "options": {
+                        "hideSystemAssignedIdentity": false,
+                        "hideUserAssignedIdentity": true,
+                        "readOnlySystemAssignedIdentity": true
+                    },
+                    "visible": true
+                }
+            ]
+        }],
         "outputs": {
             "storageAccountNamePrefix": "[steps('storageConfig').storageAccounts.prefix]",
             "storageAccountType": "[steps('storageConfig').storageAccounts.type]",
