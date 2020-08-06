@@ -40,7 +40,7 @@ $items = [ordered]@{
     planName           = $planName
 }
 
-Write-ItemsAsJson -HeaderMessage "Customer-side variables" -Items $items
+# Write-ItemsAsJson -HeaderMessage "Customer-side variables" -Items $items
 
 # get the managed application information
 $mApplication = $null
