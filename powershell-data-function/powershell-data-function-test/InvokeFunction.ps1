@@ -1,10 +1,10 @@
 
+$appVersion = "<Version of the .zip file from your Partner Center Plan>"
 $cApplicationName = "<Client Managed Application Name>"
 $cResourceGroup = "<Client Resource Group Name>"
 $cSubscription = "<Client Subscription ID>"
-$planName = "<ID of the Plan in Partner Center>"
 $functionUri = "<function URL>/api/resource>"
-$appVersion = "<Version of the .zip file from your Partner Center Plan>"
+$planName = "<ID of the Plan in Partner Center>"
 $publisher = "<Could be anything really>"
 $applicationId = "/subscriptions/$cSubscription/resourceGroups/$cResourceGroup/providers/Microsoft.Solutions/applications/$cApplicationName"
 
