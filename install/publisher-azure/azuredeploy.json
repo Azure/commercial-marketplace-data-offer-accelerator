@@ -36,7 +36,7 @@
                 "S1"
             ],
             "metadata": {
-                "description": "The function is resposible to configure the consumer Data Share Account, data set mappings and synchronization settings etc. Recommneded plan is B1."
+                "description": "The function is responsible for configuring the consumer Data Share Account, data set mappings and synchronization settings etc. Recommneded plan is B1."
             }
         }
     },
