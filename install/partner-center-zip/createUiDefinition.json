@@ -6,19 +6,19 @@
         "config": {
             "basics": {
                 "location": {
-                    "label": "Location",
+                    "label": "Region",
                     "toolTip": "Regions to deploy publisher resources",
                     "resourceTypes": ["Microsoft.DataShare/accounts"],
                     "allowedValues": [
-                        "Australia East",
-                        "East US 2",
-                        "East US",
-                        "North Europe",
-                        "South Central US",
-                        "Southeast Asia",
-                        "UK South",
-                        "West Europe",
-                        "West US 2"
+                        "australiaeast",
+                        "eastus",
+                        "eastus2",
+                        "northeurope",
+                        "southcentralus",
+                        "southeastasia",
+                        "uksouth",
+                        "westeurope",
+                        "westus2"
                     ],
                     "visible": true
                 }
