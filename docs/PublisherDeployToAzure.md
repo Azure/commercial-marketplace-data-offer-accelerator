@@ -1,8 +1,17 @@
 # Data Publisher - Deploy Resources to Azure
 
-This folder contains the technical artifacts that you can use to create the Azure services in your Azure tenant as a publisher.
+### Deploy this to your Azure subscription
 
-### The dployment files
+There are 4 ways to deploy this ARM template from this repo to your Azure subscription as described below.
+
+1. Use the "Deploy to Azure" button to deploy using the Azure portal
+2. Clone this repo and deploy the template from your system
+3. Use PowerShell
+4. Use Azure CLI.
+
+This folder contains the technical artifacts  you can use to create the Azure services in your Azure tenant as a publisher.
+
+### The deployment files
 ```
 This folder
 |
@@ -22,16 +31,7 @@ The following resources will be deployed to Azure when installing the Data Publi
     - A Storage account ued by the Azure Function
     - An App Service to host the Azure Function
 
-This deployment is based on ARM templates. This ARM template requires designating a resource name prefix and a location where Azure Data Share accounts is available. The resource name prefix is used in constructing a name for each resource created as part of the depployment. 
-
-### Deploy this to your Azure subscription
-
-There are 4 ways to deploy this ARM template from this repo to your Azure subscription
-
-1. Use the "Deploy to Azure" button to deploy using the Azure portal
-2. Clone this repo and deploy the template from your system
-3. Use PowerShell
-4. Use Azure CLI.
+This deployment is based on ARM templates. This ARM template requires designating a resource name prefix and a location where Azure Data Share accounts is available. The resource name prefix is used in constructing a name for each resource created as part of the deployment. 
 
 #### Deploy using Azure portal
 
