@@ -1,5 +1,10 @@
+# ----------------------------------------------------------------------------------------------------
+# Do not run this script until you have changed the pid-GUID as directed int the documentation
+# ----------------------------------------------------------------------------------------------------
 # this script file creates the app.zip file to be uploaded for each Offer > Plan in Partner Center
-# the "app.zip" output file goes to the "partner-center-config" folder
+# the output file goes to the "partner-center-config/app.zip" folder
+# this script ensure no OS files are included from non-Windows systems
+# ----------------------------------------------------------------------------------------------------
 
 $destinationPath = "../partner-center-config/app.zip"
 
