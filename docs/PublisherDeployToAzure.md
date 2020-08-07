@@ -4,10 +4,10 @@
 
 There are 4 ways to deploy this ARM template from this repo to your Azure subscription as described below.
 
-1. Use the "Deploy to Azure" button to deploy using the Azure portal
-2. Clone this repo and deploy the template from your system
-3. Use PowerShell
-4. Use Azure CLI.
+1. [Use the "Deploy to Azure" button to deploy using the Azure portal](#deploy-using-azure-portal)
+2. [Clone this repo and deploy the template from your system](#clone-this-repo-and-deploy-the-template-from-your-system)
+3. [Use PowerShell](#deploy-using-powershell)
+4. [Use Azure CLI](#deploy-using-azure-cli)
 
 This folder contains the technical artifacts  you can use to create the Azure services in your Azure tenant as a publisher.
 
@@ -43,7 +43,7 @@ Deploy Data Publisher resources directly your Azure.
 
 This template deploys the source code available at [/powershell-data-function](https://github.com/Azure/commercial-marketplace-data-offers/tree/main/powershell-data-function) using ZipDeploy. The zip file is located at https://github.com/Azure/commercial-marketplace-data-offers/tree/main/install/publisher-azure/functionapp
 
-In most cases, you can leave the *PackageURI* variable in the ARM template unchanged. However, if you are making any changes to the function app source code, please ensure that you are create a zip package that contains those changes and update the *PackageURI*  variable to point to the zip file where it can be accessed over the Internet. You can use SAS tokens if you are storing them in a storage account.
+> In most cases, you can leave the *PackageURI* variable in the ARM template unchanged. However, if you are making any changes to the function app source code, please ensure that you are create a zip package that contains those changes and update the *PackageURI*  variable to point to the zip file where it can be accessed over the Internet. You can use SAS tokens if you are storing them in a storage account.
 
 ```
 Note: This applies to the PowerShell and Azure CLI deployments as well.
