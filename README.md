@@ -10,7 +10,7 @@ Below are instructions, videos, and helpful resources to get up and running to p
 1. [Deploy publisher Azure resources](docs/PublisherDeployToAzure.md)
 1. [Create a Data Share in your Data Share Account](docs/CreateDataShare.md)
 1. [Preparing Plan artifacts for the Partner Center portal](docs/PreparePlan.md)
-1. [Creating an Offer > Plan in Partner Center](docs/CreatePlan.md)
+1. [Creating an Offer and Plan in Partner Center](docs/CreatePlan.md)
 1. [Purchasing a Data Offer as a consumer](docs/PurchaseDataOffer.md)
 
 ## Other Marketplace Resources
