@@ -6,7 +6,6 @@
 # this script ensure no OS files are included from non-Windows systems
 # ----------------------------------------------------------------------------------------------------
 
-
 zipFile='../partner-center-config/app.zip'
 
 if [ -f $zipFile ]; then
