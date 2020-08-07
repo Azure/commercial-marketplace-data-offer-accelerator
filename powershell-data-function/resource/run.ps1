@@ -33,12 +33,13 @@ $cResourceGroupName = $a[4]
 
 $items = [ordered]@{
     "env:MSI_ENDPOINT" = $env:MSI_ENDPOINT
-    "env:MSI_SECRET" = $env:MSI_SECRET
-    cApplicationId = $cApplicationId
+    "env:MSI_SECRET"   = $env:MSI_SECRET
+    cApplicationId     = $cApplicationId
     cResourceGroupName = $cResourceGroupName
-    cSubscriptionId = $cSubscriptionId
-    planName = $planName
+    cSubscriptionId    = $cSubscriptionId
+    planName           = $planName
 }
+
 # Write-ItemsAsJson -HeaderMessage "Customer-side variables" -Items $items
 
 # get the managed application information
@@ -46,6 +47,7 @@ $mApplication = $null
 
 Try {
     # Sometimes this call fails because the managed application has not completed provisioninng 
+
     # by the time this function gets called
     $mApplication = Get-AzManagedApplication -ResourceGroupName $cResourceGroupName
 }
@@ -74,12 +76,12 @@ $mTenantId = $mApplicationResource.Identity.TenantId
 
 $items = [ordered]@{
     mApplicationResource = $mApplicationResource
-    mDataShareAccount = $mDataShareAccount
-    mIdentity = $mIdentity
-    mResourceGroupId = $mResourceGroupId
-    mResourceGroupName = $mResourceGroupName
-    mStorageAccount = $mStorageAccount
-    mTenantId = $mTenantId
+    mDataShareAccount    = $mDataShareAccount
+    mIdentity            = $mIdentity
+    mResourceGroupId     = $mResourceGroupId
+    mResourceGroupName   = $mResourceGroupName
+    mStorageAccount      = $mStorageAccount
+    mTenantId            = $mTenantId
 }
 # Write-ItemsAsJson -HeaderMessage "Managed Application variables" -Items $items
 
@@ -124,8 +126,14 @@ $pResourceGroupName = (Get-Item -Path Env:WEBSITE_RESOURCE_GROUP).Value
 $websiteOwnerName = (Get-Item -Path Env:WEBSITE_OWNER_NAME).Value
 $pSubscriptionId = ($websiteOwnerName -split "\+")[0]
 
+$items = @{
+    "Env:WEBSITE_RESOURCE_GROUP" = $Env:WEBSITE_RESOURCE_GROUP
+    "Env:WEBSITE_OWNER_NAME"     = $Env:WEBSITE_OWNER_NAME
+    "websiteOwnerName"           = $websiteOwnerName
+    "pSubscriptionId"            = $pSubscriptionId
+}
 
-
+# Write-ItemsAsJSON -HeaderMessage "Publisher Variables" -Items $items
 
 # connecting to publisher side
 Set-AzContext -SubscriptionId $pSubscriptionId
@@ -153,10 +161,13 @@ if (!$pDataShare) {
 
 # Write-ItemAsJSON -HeaderMessage "The Data Share we are synching" -Item $pDataShare
 
-# Send an invite if one hasn't already been sent
+# get all current invites, kill them and issue one new one.
 $invitation = Get-AzDataShareInvitation -AccountName $pDataShareAccountName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name
+
 if ($invitation) {
-    Remove-AzDataShareInvitation -AccountName $pDataShareAccountName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name -Name $invitation.Name
+    foreach ($invite in $invitation) {
+        Remove-AzDataShareInvitation -AccountName $pDataShareAccountName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name -Name $invite.Name
+    }
 }
 $invitationName = "$($pDataShare.Name)-Invitation"
 $invitation = New-AzDataShareInvitation -AccountName $pDataShareAccountName -Name $invitationName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name -TargetObjectId $mIdentity -TargetTenantId $mTenantId
