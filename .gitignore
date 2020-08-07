@@ -360,3 +360,5 @@ __MACOSX/
 # A customized test file
 */InvokeFunctionTest.ps1
 **/.DS_Store
+InvokeFunctionTest.ps1
+install/partner-center-config/app.zip
