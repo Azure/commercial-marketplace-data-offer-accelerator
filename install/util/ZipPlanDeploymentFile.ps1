@@ -1,12 +1,14 @@
 # this script file creates the app.zip file to be uploaded for each Offer > Plan in Partner Center
-# the output goes to the partner-cetner-config folder
+# the "app.zip" output file goes to the "partner-center-config" folder
 
 $destinationPath = "../partner-center-config/app.zip"
 
-Remove-Item -Path $destinationPath
+if(Test-Path "../partner-center-config/app.zip") {
+  Remove-Item -Path $destinationPath
+}
 
 $compress = @{
-    Path = "./*.json", "./nestedtemplates/"
+    Path = "../partner-center-zip/*.json", "../partner-center-zip/nestedtemplates/"
     CompressionLevel = "Fastest"
     DestinationPath = $destinationPath
   }
