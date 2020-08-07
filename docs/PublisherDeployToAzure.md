@@ -26,7 +26,8 @@ This deployment is based on ARM templates. This ARM template requires designatin
 
 ### Deploy this to your Azure subscription
 
-There are 3 ways to deploy this ARM template to your Azure subscription -
+There are 4 ways to deploy this ARM template from this repo to your Azure subscription
+
 1. Use the "Deploy to Azure" button to deploy using the Azure portal
 2. Clone this repo and deploy the template from your system
 3. Use PowerShell
