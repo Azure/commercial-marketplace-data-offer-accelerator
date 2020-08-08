@@ -39,7 +39,6 @@ $items = [ordered]@{
     cSubscriptionId    = $cSubscriptionId
     planName           = $planName
 }
-
 # Write-ItemsAsJson -HeaderMessage "Customer-side variables" -Items $items
 
 # get the managed application information
@@ -85,41 +84,50 @@ $items = [ordered]@{
 }
 # Write-ItemsAsJson -HeaderMessage "Managed Application variables" -Items $items
 
-# Creating role assignment on Data Storage account: Storage Blob Data Contributor
-$restUri = "https://management.azure.com$($mStorageAccount.Id)/providers/Microsoft.Authorization/roleAssignments/$(New-Guid)?api-version=2019-04-01-preview"
 
-$headers = @{
-    'Authorization' = 'Bearer ' + $cAccessToken
-    'Content-Type'  = 'application/json'
-}
+Add-RoleToStorage -RoleGuid "ba92f5b4-2d11-453d-a403-e96b0029c9fe" -RoleName "Storage Blob Data Contributor" -StorageAccountId $mStorageAccount.Id -DataShareAccount $mDataShareAccount
+
+Add-RoleToStorage -RoleGuid "2a2b9908-6ea1-4ae2-8e65-a410df84e7d1" -RoleName "Storage Blob Data Reader" -StorageAccountId $mStorageAccount.Id -DataShareAccount $mDataShareAccount
+
+Add-RoleToStorage -RoleGuid "b7e6dc6d-f1e8-4753-8033-0f276bb0955b" -RoleName "Storage Blob Data Owner" -StorageAccountId $mStorageAccount.Id -DataShareAccount $mDataShareAccount
+
+
+
+# Creating role assignment on Data Storage account: Storage Blob Data Contributor
+# $restUri = "https://management.azure.com$($mStorageAccount.Id)/providers/Microsoft.Authorization/roleAssignments/$(New-Guid)?api-version=2019-04-01-preview"
+
+# $headers = @{
+#     'Authorization' = 'Bearer ' + $cAccessToken
+#     'Content-Type'  = 'application/json'
+# }
 
 # Role assignment works with delegatedManagedIdentityResourceId
 # Adding this role to the Data Storage account: Storage Blob Data Contributor 
-$body = @{
-    "properties" = @{
-        "delegatedManagedIdentityResourceId" = "$($mDataShareAccount.Id)"
-        "principalId"                        = "$($mDataShareAccount.Identity.PrincipalId)"
-        "roleDefinitionId"                   = "$($mStorageAccount.Id)/providers/Microsoft.Authorization/roleAssignments/ba92f5b4-2d11-453d-a403-e96b0029c9fe"
-    }
-} | ConvertTo-Json
+# $body = @{
+#     "properties" = @{
+#         "delegatedManagedIdentityResourceId" = "$($mDataShareAccount.Id)"
+#         "principalId"                        = "$($mDataShareAccount.Identity.PrincipalId)"
+#         "roleDefinitionId"                   = "$($mStorageAccount.Id)/providers/Microsoft.Authorization/roleAssignments/ba92f5b4-2d11-453d-a403-e96b0029c9fe"
+#     }
+# } | ConvertTo-Json
 
-Try {
+# Try {
     
-    Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
+#     Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
 
-}
-Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
+# }
+# Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
 
-    if ($_.Exception.Response.StatusCode -eq 409) {
-        Write-Host "WARNING: Role already assigned" -ForegroundColor Yellow
-    }
-    elseif ($_.Exception.Response.StatusCode -eq 403) {
-        Write-Host "ERROR: Canot assign role - 'Forbidden'" -ForegroundColor Yellow
-    }
-    else {
-        throw $_
-    }
-}
+#     if ($_.Exception.Response.StatusCode -eq 409) {
+#         Write-Host "WARNING: Role already assigned" -ForegroundColor Yellow
+#     }
+#     elseif ($_.Exception.Response.StatusCode -eq 403) {
+#         Write-Host "ERROR: Canot assign role - 'Forbidden'" -ForegroundColor Yellow
+#     }
+#     else {
+#         throw $_
+#     }
+# }
 
 # Fetching Publisher-side details
 $pResourceGroupName = (Get-Item -Path Env:WEBSITE_RESOURCE_GROUP).Value
