@@ -4,15 +4,17 @@
 
  The steps you must perform include the following.
 
- 1. Acquire and use a special GUID used to enable metrics tracking of your customer's solutions from within the Partner Center portal.
- 1. Create a ZIP file that will be uploaded with each plan you create in the Partner Center portal. This ZIP file contains artifacts needed to create the Azure resources in the consumer's tenant.
-
-
-
+ 1. Download the contents of the GitHub repository.
+ 1. Acquire and use a special GUID from [this tool](https://forms.office.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbR3i8TQB_XnRAsV3-7XmQFpFUMVRVVFFLTDFLS0E2QzNYSkFZR1U3WVJCTSQlQCN0PWcu) used to enable metrics tracking of your customer's solutions from within the Partner Center portal.
+ 1. Create a special ZIP file that will be uploaded with each plan you create in the Partner Center portal. This ZIP file contains artifacts needed to create the Azure resources in the consumer's tenant.
 
 <a href="#"><img src="./images/Video.png" width="50" style="float:left;" target="_blank"></a>
 
-[This video](#) details how to map Plans to Data Shares, ensuring your Data Offers work as expected.
+[This video](#) details how to these steps ensuring your Data Offers work as expected.
+
+---
+
+
 
 
 
