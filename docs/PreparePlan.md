@@ -6,7 +6,7 @@ To prepare for creating your Offer and Plans in the Partner Center portal, there
 
 Pause at any time to work along with the video.
 
-<a href="https://youtu.be/9hqM2IFNd7I">![Slide Thubnail](./images/05.png)</a>
+<a href="https://youtu.be/9hqM2IFNd7I">![Slide Thumbnail](./images/05.png)</a>
 
 
 
