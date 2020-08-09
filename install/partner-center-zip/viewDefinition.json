@@ -4,17 +4,10 @@
         {
             "kind": "Overview",
             "properties": {
-                "header": "Welcome to your\nAzure Data Share Application",
+                "header": "Welcome to your Azure Data Share Managed Application",
                 "description": "Your data may be found in the Azure Storage database accessed by clicking the link next to **Managed resource group** above."
-            }
-        },
-        {
-            "kind":"Overview",
-            "properties": {
-                "header": "Warning",
-                "description": "Deleting this application or resource group will cause the Managed Resource Group with your data in it to also be deleted."
             }
         }
     ],
-    "contentVersion": "0.0.0.1"
+    "contentVersion": "0.0.0.2"
 }    
