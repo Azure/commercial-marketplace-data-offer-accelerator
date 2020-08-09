@@ -1,10 +1,10 @@
 # Preparing to create a Plan in Partner Center portal
 
- To prepare for creating your Offer and Plans in the Partner Center portal, there are some artifacts you must prepare. The below video walks through these steps. Pause at any time to work along with the video.
+To prepare for creating your Offer and Plans in the Partner Center portal, there are some artifacts you must prepare. The below video walks through the steps of creating these artifacts.
+ 
+ Pause at any time to work along with the video.
 
 <a href="https://youtu.be/9hqM2IFNd7I"><img src="./images/Video.png" width="50" style="float:left;" target="_blank"></a>
-
-[This video](https://youtu.be/9hqM2IFNd7I) details how to perform these steps ensuring your Data Offers work as expected.
 
 <a href="https://youtu.be/9hqM2IFNd7I">![Slide Thubnail](./images/05.png)</a>
 
