@@ -1,4 +1,6 @@
-# ----------------------------------------------------------------------------------------------------
+ #!/bin/bash 
+ 
+ # ----------------------------------------------------------------------------------------------------
 # Do not run this script until you have changed the pid-GUID as directed int the documentation
 # ----------------------------------------------------------------------------------------------------
 # this script file creates the app.zip file to be uploaded for each Offer > Plan in Partner Center

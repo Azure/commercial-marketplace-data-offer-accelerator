@@ -4,6 +4,72 @@
 #     Connect-AzAccount -Identity
 # }
 
+
+
+function Add-RoleToStorage() {
+
+    param(
+        
+        [Parameter(Mandatory=$true)]
+        [Microsoft.Azure.PowerShell.Cmdlets.DataShare.Models.PSDataShareAccount] $DataShareAccount,
+
+        [Parameter(Mandatory=$true)]
+        [String] $StorageAccountId,
+
+        [Parameter(Mandatory=$true)]
+        [String] $RoleGuid,
+
+        [Parameter(Mandatory=$true)]
+        [String] $RoleName
+
+    )
+
+    $accessToken = Get-ClientAccessToken
+
+    $roleDefinition = "$StorageAccountId/providers/Microsoft.Authorization/roleAssignments/$RoleGuid"
+    Write-Host "roleDefinition: $roleDefinition"
+
+    $headers = @{
+        'Authorization' = 'Bearer ' + $accessToken
+        'Content-Type'  = 'application/json'
+    }
+    
+    # Role assignment works with delegatedManagedIdentityResourceId
+    # Adding this role to the Data Storage account: Storage Blob Data Contributor 
+    $body = @{
+        "properties" = @{
+            "delegatedManagedIdentityResourceId" = "$($DataShareAccount.Id)"
+            "principalId"                        = "$($DataShareAccount.Identity.PrincipalId)"
+            "roleDefinitionId"                   = $roleDefinition
+        }
+    } | ConvertTo-Json
+
+    # Creating role assignment on Data Storage account: Storage Blob Data Contributor
+    $restUri = "https://management.azure.com/$StorageAccountId/providers/Microsoft.Authorization/roleAssignments/$(New-Guid)?api-version=2019-04-01-preview"
+
+    
+    Try {
+        
+        Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
+        Write-Host "Applied role '$RoleName' to Storage"
+    
+    }
+    Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
+    
+        if ($_.Exception.Response.StatusCode -eq 409) {
+            Write-Host "Role already assigned: $RoleName" -ForegroundColor Yellow
+        }
+        elseif ($_.Exception.Response.StatusCode -eq 403) {
+            Write-Host "ERROR: Canot assign role '$RoleName' - 'Forbidden'" -ForegroundColor Yellow
+        }
+        else {
+            throw $_
+        }
+    }
+
+}
+
+
 function Assert-ResourceGroupExists($resourceGroupName) {
 
     $rg = $null
@@ -33,6 +99,7 @@ function Assert-ResourceGroupExists($resourceGroupName) {
 }
 
 function Get-ClientAccessToken() {
+    
     $resourceURI = "https://management.azure.com/"
     $tokenAuthURI = $env:MSI_ENDPOINT + "?resource=$resourceURI&api-version=2017-09-01"
     $tokenResponse = Invoke-RestMethod -Method Get -Headers @{"Secret" = "$env:MSI_SECRET" } -Uri $tokenAuthURI
