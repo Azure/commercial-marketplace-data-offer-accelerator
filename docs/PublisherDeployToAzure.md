@@ -64,36 +64,36 @@ Note: This applies to the PowerShell and Azure CLI deployments as well.
 
 ```powershell
 $rgName="<your resource group name>"
-$location="<region with Azure Data Share availability>"
-$templateUri="https://raw.githubusercontent.com/Azure/commercial-marketplace-data-offers/main/install/publisher-azure/azuredeploy.json"
+$location="<region with Azure Data Share availability in the long format, such as - East US>"
+$templateFile="./azuredeploy.json"
 
 $resourceNamePrefix="<prefix for resources>"
 $appServicePlan="B1"
 
 # Create a resource group
-New-AzResourceGroup -Name $rgName -Location $location
+New-AzResourceGroup -Name "$rgName" -Location "$location"
 
 # Deploy the template
-New-AzResourceGroupDeployment -ResourceGroupName $rgName -TemplateFile $templateUri -ResourceNamePrefix $resourceNamePrefix -ResourceLocation $location -AppServicePlan $appServicePlan
+New-AzResourceGroupDeployment -ResourceGroupName "$rgName" -TemplateFile "$templateFile" -ResourceNamePrefix "$resourceNamePrefix" -ResourceLocation "$location" -AppServicePlan "$appServicePlan"
 ```
 
 #### Deploy using Azure CLI
 
 ```bash
 rgName="<your resource group name>"
-location="<region with Azure Data Share availability>"
-templateUri="https://raw.githubusercontent.com/Azure/commercial-marketplace-data-offers/main/install/publisher-azure/azuredeploy.json"
+location="<region with Azure Data Share availability in the long format, such as - East US>"
+templateFile="./azuredeploy.json"
 
 resourceNamePrefix="<prefix for resources>"
 appServicePlan="B1"
 
 # Create a resource group
-az group create --name $rgName --location $location
+az group create --name "$rgName" --location "$location"
 
 # Deploy the template
 az deployment group create \
   --name ExampleDeployment \
-  --resource-group $rgName \
-  --template-file $templateUri \
-  --parameters ResourceNamePrefix=$resourceNamePrefix ResourceLocation=$location AppServicePlan=$appServicePlan
+  --resource-group "$rgName" \
+  --template-file "$templateFile" \
+  --parameters ResourceNamePrefix="$resourceNamePrefix" ResourceLocation="$location" AppServicePlan="$appServicePlan"
 ```

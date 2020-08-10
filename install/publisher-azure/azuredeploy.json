@@ -44,7 +44,7 @@
         "AppServicePlanName": "[substring(concat(parameters('ResourceNamePrefix'), 'function', uniqueString(resourceGroup().id)), 0, 23)]",
         "DataShareAccountName": "[substring(concat(parameters('ResourceNamePrefix'), 'acct', uniqueString(resourceGroup().id)), 0, 23)]",
         "FunctionAppName": "[substring(concat(parameters('ResourceNamePrefix'), 'function', uniqueString(resourceGroup().id)), 0, 23)]",
-        "FunctionStorageName": "[substring(concat(parameters('ResourceNamePrefix'), 'function', uniqueString(resourceGroup().id)), 0, 23)]",
+        "FunctionStorageName": "[substring(concat(replace(parameters('ResourceNamePrefix'), '-', ''), 'function', uniqueString(resourceGroup().id)), 0, 23)]",
         "Location": "[parameters('ResourceLocation')]",
         "PackageURI": "https://raw.githubusercontent.com/Azure/commercial-marketplace-data-offers/main/install/publisher-azure/functionapp/functionapp.zip",
         "ReaderRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
