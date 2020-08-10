@@ -2,16 +2,27 @@
 
 ### Deploy this to your Azure subscription
 
-There are 4 ways to deploy this ARM template from this repo to your Azure subscription as described below.
+There are 4 ways to deploy the data publisher resources from this repository to your Azure subscription.
 
 1. [Use the "Deploy to Azure" button to deploy using the Azure portal](#deploy-using-azure-portal)
 2. [Clone this repo and deploy the template from your system](#clone-this-repo-and-deploy-the-template-from-your-system)
 3. [Use PowerShell](#deploy-using-powershell)
 4. [Use Azure CLI](#deploy-using-azure-cli)
 
-This folder contains the technical artifacts  you can use to create the Azure services in your Azure tenant as a publisher.
+<a href="https://youtu.be/FM9NlWo6eqk"><img src="./images/Video.png" width="50" style="float:left;align:left;" align="left" target="_blank"></a>
+
+You can watch a video of all of these technics to decide which is best for you. The installation techniques are further documented below. Pause at any time to work along with the video.
+
+<a href="https://youtu.be/FM9NlWo6eqk">![Slide Thumbnail](./images/06.png)</a>
+
+
+
+
 
 ### The deployment files
+
+This folder contains the technical artifacts  you can use to create the Azure services in your Azure tenant as a publisher.
+
 ```
 This folder
 |
