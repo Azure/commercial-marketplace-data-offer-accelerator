@@ -4,8 +4,6 @@ For those selling data in the Azure Marketplace, it can be very important to und
 
 <a href="https://youtu.be/oVL2-gHzJCQ"><img src="./images/Video.png" width="50" style="display:inline-block;" align="left"></a>
 
-[Watch a short video](https://youtu.be/oVL2-gHzJCQ) stepping through the logical architecture model shown below along with some additional information.
+Watch a short video stepping through the logical architecture model shown below along with some additional information.
 
----
-
-![Logical Architecture](./images/02.png)
+<a href="https://youtu.be/oVL2-gHzJCQ">![Logical Architecture](./images/02.png)</a>
