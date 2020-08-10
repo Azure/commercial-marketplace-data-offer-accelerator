@@ -35,12 +35,12 @@
             "bladeTitle": "Storage settings",
             "elements": [
                 {
-                    "name": "moreInfo3",
+                    "name": "moreInfo1",
                     "type": "Microsoft.Common.InfoBox",
                     "visible": true,
                     "options": {
                         "icon": "Info",
-                        "text": "The Storage account name prefix sets the first part of the name of the Azure Storage account to be created."
+                        "text": "The Storage Account name prefix sets the first part of the name of the Azure resources to be created in the Managed Resource Group chosen in the previous step."
                     }
                 },
                 {
@@ -64,7 +64,7 @@
                     }
                 },
                 {
-                    "name": "moreInfo4",
+                    "name": "moreInfo2",
                     "type": "Microsoft.Common.InfoBox",
                     "visible": true,
                     "options": {

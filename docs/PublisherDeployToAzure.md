@@ -1,8 +1,28 @@
 # Data Publisher - Deploy Resources to Azure
 
-This folder contains the technical artifacts that you can use to create the Azure services in your Azure tenant as a publisher.
+### Deploy this to your Azure subscription
 
-### The dployment files
+There are 4 ways to deploy the data publisher resources from this repository to your Azure subscription.
+
+1. [Use the "Deploy to Azure" button to deploy using the Azure portal](#deploy-using-azure-portal)
+2. [Clone this repo and deploy the template from your system](#clone-this-repo-and-deploy-the-template-from-your-system)
+3. [Use PowerShell](#deploy-using-powershell)
+4. [Use Azure CLI](#deploy-using-azure-cli)
+
+<a href="https://youtu.be/FM9NlWo6eqk"><img src="./images/Video.png" width="50" style="float:left;align:left;" align="left" target="_blank"></a>
+
+You can watch a video of all of these technics to decide which is best for you. The installation techniques are further documented below. Pause at any time to work along with the video.
+
+<a href="https://youtu.be/FM9NlWo6eqk">![Slide Thumbnail](./images/06.png)</a>
+
+
+
+
+
+### The deployment files
+
+This folder contains the technical artifacts  you can use to create the Azure services in your Azure tenant as a publisher.
+
 ```
 This folder
 |
@@ -22,15 +42,7 @@ The following resources will be deployed to Azure when installing the Data Publi
     - A Storage account ued by the Azure Function
     - An App Service to host the Azure Function
 
-This deployment is based on ARM templates. This ARM template requires designating a resource name prefix and a location where Azure Data Share accounts is available. The resource name prefix is used in constructing a name for each resource created as part of the depployment. 
-
-### Deploy this to your Azure subscription
-
-There are 3 ways to deploy this ARM template to your Azure subscription -
-1. Use the "Deploy to Azure" button to deploy using the Azure portal
-2. Clone this repo and deploy the template from your system
-3. Use PowerShell
-4. Use Azure CLI.
+This deployment is based on ARM templates. This ARM template requires designating a resource name prefix and a location where Azure Data Share accounts is available. The resource name prefix is used in constructing a name for each resource created as part of the deployment. 
 
 #### Deploy using Azure portal
 
@@ -42,7 +54,7 @@ Deploy Data Publisher resources directly your Azure.
 
 This template deploys the source code available at [/powershell-data-function](https://github.com/Azure/commercial-marketplace-data-offers/tree/main/powershell-data-function) using ZipDeploy. The zip file is located at https://github.com/Azure/commercial-marketplace-data-offers/tree/main/install/publisher-azure/functionapp
 
-In most cases, you can leave the *PackageURI* variable in the ARM template unchanged. However, if you are making any changes to the function app source code, please ensure that you are create a zip package that contains those changes and update the *PackageURI*  variable to point to the zip file where it can be accessed over the Internet. You can use SAS tokens if you are storing them in a storage account.
+> In most cases, you can leave the *PackageURI* variable in the ARM template unchanged. However, if you are making any changes to the function app source code, please ensure that you are create a zip package that contains those changes and update the *PackageURI*  variable to point to the zip file where it can be accessed over the Internet. You can use SAS tokens if you are storing them in a storage account.
 
 ```
 Note: This applies to the PowerShell and Azure CLI deployments as well.

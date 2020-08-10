@@ -1,10 +1,9 @@
 # Logical Architecure
 
+For those selling data in the Azure Marketplace, it can be very important to understand the overall architecture of a Data Offer and how the various components interact between the data publisher and the data consumer.
 
 <a href="https://youtu.be/oVL2-gHzJCQ"><img src="./images/Video.png" width="50" style="display:inline-block;" align="left"></a>
 
-[Click here](https://youtu.be/oVL2-gHzJCQ) to watch a short video stepping through the logical architecture model shown below along with some additional information.
+Watch a short video stepping through the logical architecture model shown below along with some additional information.
 
----
-
-![Logical Architecture](./images/02.png)
+<a href="https://youtu.be/oVL2-gHzJCQ">![Logical Architecture](./images/02.png)</a>
