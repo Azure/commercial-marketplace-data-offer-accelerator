@@ -47,8 +47,8 @@
         "FunctionStorageName": "[substring(concat(replace(parameters('ResourceNamePrefix'), '-', ''), 'function', uniqueString(resourceGroup().id)), 0, 23)]",
         "Location": "[parameters('ResourceLocation')]",
         "PackageURI": "https://raw.githubusercontent.com/Azure/commercial-marketplace-data-offers/main/install/publisher-azure/functionapp/functionapp.zip",
-        "ReaderRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]",
-        "ResourceGroupRoleAssignmentId": "[guid(concat(resourceGroup().id, 'reader'))]"
+        "ContributorRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+        "ResourceGroupRoleAssignmentId": "[guid(concat(resourceGroup().id, 'contributor'))]"
     },
     "resources": [
         {
@@ -149,7 +149,7 @@
                 "[resourceId('Microsoft.Web/Sites', variables('FunctionAppName'))]"
             ],
             "properties": {
-                "roleDefinitionId": "[variables('ReaderRoleDefinitionId')]",
+                "roleDefinitionId": "[variables('ContributorRoleDefinitionId')]",
                 "principalId": "[reference(concat('Microsoft.Web/sites/', variables('FunctionAppName')), '2019-08-01', 'Full').identity.principalId]",
                 "scope": "[resourceGroup().id]",
                 "principalType": "ServicePrincipal"
