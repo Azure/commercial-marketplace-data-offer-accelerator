@@ -10,7 +10,7 @@ This PoC allows selling and purchasing of raw data within the Azure Marketplace.
 
 Below are instructions, videos, and helpful resources to get up and running to publish Data Offer on the Azure Marketplace and to understand the purchase experience.
 
-1. [Logical architecure overview](docs/Architecture.md)
+1. [Logical architecture overview](docs/Architecture.md)
 1. [Deploy publisher Azure resources](docs/PublisherDeployToAzure.md)
 1. [Create a Data Share in your Data Share Account](docs/CreateDataShare.md)
 1. [Preparing Plan artifacts for the Partner Center portal](docs/PreparePlan.md)
