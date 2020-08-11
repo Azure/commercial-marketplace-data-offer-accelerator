@@ -226,6 +226,7 @@ foreach ($dataSet in $shareDataSets) {
         
         $body = @{
             "kind"       = "Blob"
+            "name"       = $dataSet.DataSetId
             "properties" = @{
                 "containerName"      = $dataSet.ContainerName
                 "dataSetId"          = $dataSet.DataSetId
@@ -248,12 +249,9 @@ foreach ($dataSet in $shareDataSets) {
             }
         } | ConvertTo-Json
     }
-
     
     Write-Host =======================================================
     Write-Host $body
-    Write-Host =======================================================
-    Write-Host $(Get-AzDataShareDataSetMapping -ResourceGroupName $cResourceGroupName -AccountName $mDataShareAccount.Name -ShareSubscriptionName $)
     Write-Host =======================================================
     
     
