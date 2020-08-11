@@ -253,9 +253,8 @@ foreach ($dataSet in $shareDataSets) {
     Write-Host =======================================================
     Write-Host $body
     Write-Host =======================================================
-    
-    
-    $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/dataSetMappings/$($dataSet.ContainerName)?api-version=2019-11-01"
+
+    $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/dataSetMappings/$($dataSet.DataSetId)?api-version=2019-11-01"
     
     Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
 }
