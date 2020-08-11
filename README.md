@@ -17,6 +17,6 @@ Below are instructions, videos, and helpful resources to get up and running to p
 
 Following are links to additional resources about the Azure Marketplace and the Partner Center portal. These resources are provided to help with the publishing process and other aspects of selling your solution in the Azure Marketplace.
 
-1. [Welcome to the commercial marketplace](https://docs.microsoft.com/en-us/azure/marketplace/)
-1. [Overview of the Commercial Marketplace Portal in Partner Center](https://docs.microsoft.com/en-us/azure/marketplace/partner-center-portal/commercial-marketplace-overview)
-1. [Create an Azure Applicaiton offer](https://docs.microsoft.com/en-us/azure/marketplace/partner-center-portal/create-new-azure-apps-offer)
+- [Welcome to the Azure Marketplace](https://docs.microsoft.com/en-us/azure/marketplace/)
+- [Working with the Partner Center portal](https://docs.microsoft.com/en-us/azure/marketplace/partner-center-portal/commercial-marketplace-overview)
+- [Creating an Azure Application offer](https://docs.microsoft.com/en-us/azure/marketplace/partner-center-portal/create-new-azure-apps-offer)
