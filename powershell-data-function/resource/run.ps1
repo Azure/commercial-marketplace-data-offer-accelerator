@@ -3,7 +3,6 @@ using namespace System.Net
 # Input bindings are passed in via param block.
 param($Request, $TriggerMetadata)
 
-# Write-ItemAsJSON -HeaderMessage "Request recieved as a parameter to the NEW function" -Item $Request
 
 $DebugPreference = 'Continue'
 $ErrorActionPreference = 'Stop'
@@ -38,7 +37,6 @@ $items = [ordered]@{
     cSubscriptionId    = $cSubscriptionId
     planName           = $planName
 }
-# Write-ItemsAsJson -HeaderMessage "Customer-side variables" -Items $items
 
 # get the managed application information
 $mApplication = $null
@@ -81,7 +79,6 @@ $items = [ordered]@{
     mStorageAccount      = $mStorageAccount
     mTenantId            = $mTenantId
 }
-# Write-ItemsAsJson -HeaderMessage "Managed Application variables" -Items $items
 
 
 # assign roles for the Data Store onto the Storage account 
@@ -101,7 +98,6 @@ $items = @{
     "pSubscriptionId"            = $pSubscriptionId
 }
 
-# Write-ItemsAsJSON -HeaderMessage "Publisher Variables" -Items $items
 
 # connecting to publisher side
 Set-AzContext -SubscriptionId $pSubscriptionId
@@ -127,7 +123,6 @@ if (!$pDataShare) {
     exit
 }
 
-# Write-ItemAsJSON -HeaderMessage "The Data Share we are NEW synching" -Item $pDataShare
 
 # get all current invites, kill them and issue one new one.
 $invitation = Get-AzDataShareInvitation -AccountName $pDataShareAccountName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name
@@ -140,7 +135,6 @@ if ($invitation) {
 $invitationName = "$($pDataShare.Name)-Invitation"
 $invitation = New-AzDataShareInvitation -AccountName $pDataShareAccountName -Name $invitationName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name -TargetObjectId $mIdentity -TargetTenantId $mTenantId
 
-# Write-ItemAsJSON -HeaderMessage "The NEW Invitation" -Item $invitation
 
 # suppress version warnings NEW
 Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
@@ -215,7 +209,6 @@ Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
         throw $_
     }
 }
-# Write-ItemAsJSON -HeaderMessage "Share Data Sets" -Item $shareDataSets
 
 # Mapping Data Sets
 foreach ($dataSet in $shareDataSets) {
@@ -250,10 +243,6 @@ foreach ($dataSet in $shareDataSets) {
         } | ConvertTo-Json
     }
     
-    Write-Host =======================================================
-    Write-Host $body
-    Write-Host =======================================================
-
     $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/dataSetMappings/$($dataSet.DataSetId)?api-version=2019-11-01"
     
     Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
