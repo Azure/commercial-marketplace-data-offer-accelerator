@@ -2,7 +2,7 @@
 
 The code in this repository is a proof-of-concept to allow selling of data within the Azure Marketplace and is not considered production ready.
 
-## Intallation Instructions and Examples
+## Installation Instructions and Examples
 
 Below are instructions, videos, and helpful resources to get up and running to publish Data Offer on the Azure Marketplace and to understand the purchase experience.
 
