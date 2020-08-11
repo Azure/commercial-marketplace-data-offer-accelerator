@@ -1,6 +1,10 @@
 # Azure Data Marketplace
 
-The code in this repository is a proof-of-concept to allow selling of data within the Azure Marketplace and is not considered production ready.
+This project is currently in proof-of-concept stage.
+
+> Before beginning the onboarding process, please ensure your company has signed the Data Marketplace Addendum to the Publisher Agreement. This will be provided by your business contact at Microsoft.
+
+This PoC allows selling and purchasing of raw data within the Azure Marketplace.
 
 ## Installation Instructions and Examples
 
