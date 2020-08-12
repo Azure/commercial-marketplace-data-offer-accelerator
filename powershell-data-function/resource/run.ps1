@@ -65,7 +65,24 @@ Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
     exit
 }
 
-$mApplicationResource = Get-AzResource -ResourceName $mApplication.Name
+Try {
+    $mApplicationResource = Get-AzResource -ResourceId $cApplicationId
+}
+Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
+    
+    $message = "WARNING: Get-AzResource -ResourceId $cApplicationId FAILED"
+
+    Write-Host $message
+
+    # return an error so we get a retry call later
+    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+            StatusCode = 425
+            Body       = $body
+        })
+
+    exit
+}
+
 $mResourceGroupId = $mApplication.Properties.managedResourceGroupId
 $mResourceGroupName = ($mResourceGroupId -split '/')[4]
 $mIdentity = $mApplicationResource.Identity.PrincipalId
