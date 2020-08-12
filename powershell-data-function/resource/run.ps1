@@ -181,11 +181,11 @@ if ($shareDataSets.Count -eq 0) {
 
 # TODO: get the pub side trigger here
 Try {
-    $pTrigger = Get-AzDataShareTrigger -ResourceGroupName $pResourceGroupName -AccountName $pDataShareAccountName -ShareSubscriptionName $planName
-    Write-Host $body
+    $pTrigger = Get-AzDataShareSynchronizationSetting -ResourceGroupName $pResourceGroupName -AccountName $pDataShareAccountName -ShareName $planName
 }
 catch {
     $body = "No triggers configured on the publisher subscription."
+    Write-Host $body
 }
 
 Set-AzContext -SubscriptionId $cSubscriptionId
@@ -286,7 +286,7 @@ if ($pTrigger) {
             "properties" = @{
                 "recurrenceInterval"  = "$($trigger.RecurrenceInterval)"
                 "synchronizationMode" = "$($trigger.SynchronizationMode)"
-                "synchronizationTime" = "$($trigger.SynchronizationTime)"
+                "synchronizationTime" = "$(($trigger.SynchronizationTime).ToShortTimeString())"
             }
         } | ConvertTo-Json
 
