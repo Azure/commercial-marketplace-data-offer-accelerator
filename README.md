@@ -8,7 +8,6 @@ This PoC enables selling and purchasing of raw data within the Azure Marketplace
 
 ## Installation Instructions and Examples
 
-<img src="./docs//images/Video.png" width="50" style="display:inline-block;" align="left">
 Below are instructions, videos, and helpful resources to publish Data Offers on the Azure Marketplace and understand the purchase experience.
 
 ---
