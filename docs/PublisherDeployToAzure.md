@@ -9,32 +9,28 @@ There are 4 ways to deploy the data publisher resources from this repository to 
 3. [Use PowerShell](#deploy-using-powershell)
 4. [Use Azure CLI](#deploy-using-azure-cli)
 
-<a href="https://youtu.be/FM9NlWo6eqk"><img src="./images/Video.png" width="50" style="float:left;align:left;" align="left" target="_blank"></a> You can watch a video of all of these technics to decide which is best for you. The installation techniques are further documented below. Pause at any time to work along with the video.
+<a href="https://youtu.be/FM9NlWo6eqk"><img src="./images/Video.png" width="50" style="float:left;align:left;" align="left" target="_blank"></a> Watch a video showing of all of these technics to decide which is best for you. The installation techniques are further documented below. 
 
 Pause at any time to work along with the video.
 
 <a href="https://youtu.be/FM9NlWo6eqk">![Slide Thumbnail](./images/06.png)</a>
 
-
-
-
-
 ### The deployment files
 
-This folder contains the technical artifacts  you can use to create the Azure services in your Azure tenant as a publisher.
+Below if an illustration of the artifacts used to create the Azure services in your Azure tenant as a data publisher.
 
 ```
-This folder
+/install/publish-azure/
 |
-|─── azuredeploy.json ──> this ARM template deploys all services to share your data with consumers 
-|─── azuredeploy.parameters.json ──> this is the ARM template parameter file to use if you want to automate this process as part of your DevOps pipeline
-|─── functionapp
+|─── azuredeploy.json ──> This ARM template deploys all services to share your data with consumers 
+|─── azuredeploy.parameters.json ──> This ARM template parameter file is used if you want to automate the deployment process as part of your DevOps pipeline.
+|─── functionapp/
     └─ functionapp.zip - this zip file contains the source code for a function app that is part of the solution
 ```
 
 ### What will be deployed to Azure
 
-The following resources will be deployed to Azure when installing the Data Publisher environment.
+The following resources will be deployed to Azure when installing the data publisher environment.
 
 1. A Resource Group to contain the other resources
 1. An Azure Data Share account
@@ -42,11 +38,11 @@ The following resources will be deployed to Azure when installing the Data Publi
     - A Storage account ued by the Azure Function
     - An App Service to host the Azure Function
 
-This deployment is based on ARM templates. This ARM template requires designating a resource name prefix and a location where Azure Data Share accounts is available. The resource name prefix is used in constructing a name for each resource created as part of the deployment. 
+This ARM template deployment requires designating a resource name prefix used in constructing a name for each resource created as part of the deployment. 
 
 #### Deploy using Azure portal
 
-Deploy Data Publisher resources directly your Azure.
+Deploy Data Publisher resources directly your Azure tenant. Sign in using the Azure subscription to be used to host the Data Share resources.
 
 [![Deploy to Azure](https://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fcommercial-marketplace-data-offers%2Fmain%2Finstall%2Fpublisher-azure%2Fazuredeploy.json)
 

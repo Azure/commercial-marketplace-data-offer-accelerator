@@ -1,6 +1,6 @@
 # Setting Data Share permissions on the raw data sources
 
-This video shows how to apply the appropriate permissions to your raw data Storage accounts so the Data Share service can read from it and assemble Data Shares.
+This video shows how to apply the appropriate permissions to your source data Storage accounts so the Data Share service can read raw data from them.
 
 <a href="https://youtu.be/ofk82bCqwiA"><img src="./images/Video.png" width="50" style="float:left;align:left;" align="left" target="_blank"></a>
 
