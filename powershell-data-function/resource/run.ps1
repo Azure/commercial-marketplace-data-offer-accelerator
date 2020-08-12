@@ -28,41 +28,33 @@ $planName = $Request.Body.plan.name
 $a = $cApplicationId -split '/'
 $cSubscriptionId = $a[2]
 $cResourceGroupName = $a[4]
-
-$items = [ordered]@{
-    "env:MSI_ENDPOINT" = $env:MSI_ENDPOINT
-    "env:MSI_SECRET"   = $env:MSI_SECRET
-    cApplicationId     = $cApplicationId
-    cResourceGroupName = $cResourceGroupName
-    cSubscriptionId    = $cSubscriptionId
-    planName           = $planName
-}
+$cManagedAppName = $a[8]
 
 # get the managed application information
 $mApplication = $null
+$mApplicationResource = $null
 
 Try {
     # Sometimes this call fails because the managed application has not completed provisioninng 
-
     # by the time this function gets called
-    $mApplication = Get-AzManagedApplication -ResourceGroupName $cResourceGroupName
+    $mApplication = Get-AzManagedApplication -ResourceGroupName $cResourceGroupName -Name $cManagedAppName
+    $mApplicationResource = Get-AzResource -ResourceId $cApplicationId
 }
-Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
+Catch [Microsoft.WindowsAzure.Commands.Storage.Common.ResourceNotFoundException]{
     
-    $message = "WARNING: Get-AzManagedApplication -ResourceGroupName $cResourceGroupName FAILED"
-
+    $message = "ERROR: Get-AzManagedApplication -ResourceGroupName $cResourceGroupName -Name $cManagedAppName Retry."
+    
     Write-Host $message
-
+    
     # return an error so we get a retry call later
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-            StatusCode = 425
-            Body       = $body
-        })
-
+        StatusCode = 425
+        Body       = $body
+    })
+    
     exit
 }
 
-$mApplicationResource = Get-AzResource -ResourceName $mApplication.Name
 $mResourceGroupId = $mApplication.Properties.managedResourceGroupId
 $mResourceGroupName = ($mResourceGroupId -split '/')[4]
 $mIdentity = $mApplicationResource.Identity.PrincipalId
@@ -70,34 +62,15 @@ $mDataShareAccount = Get-AzDataShareAccount -ResourceGroupName $mResourceGroupNa
 $mStorageAccount = Get-AzStorageAccount -ResourceGroupName $mResourceGroupName
 $mTenantId = $mApplicationResource.Identity.TenantId
 
-$items = [ordered]@{
-    mApplicationResource = $mApplicationResource
-    mDataShareAccount    = $mDataShareAccount
-    mIdentity            = $mIdentity
-    mResourceGroupId     = $mResourceGroupId
-    mResourceGroupName   = $mResourceGroupName
-    mStorageAccount      = $mStorageAccount
-    mTenantId            = $mTenantId
-}
-
 
 # assign roles for the Data Store onto the Storage account 
 Add-RoleToStorage -RoleGuid "ba92f5b4-2d11-453d-a403-e96b0029c9fe" -RoleName "Storage Blob Data Contributor" -StorageAccountId $mStorageAccount.Id -DataShareAccount $mDataShareAccount
 Add-RoleToStorage -RoleGuid "2a2b9908-6ea1-4ae2-8e65-a410df84e7d1" -RoleName "Storage Blob Data Reader" -StorageAccountId $mStorageAccount.Id -DataShareAccount $mDataShareAccount
-# Add-RoleToStorage -RoleGuid "b7e6dc6d-f1e8-4753-8033-0f276bb0955b" -RoleName "Storage Blob Data Owner" -StorageAccountId $mStorageAccount.Id -DataShareAccount $mDataShareAccount
 
 # Fetching Publisher-side details
 $pResourceGroupName = (Get-Item -Path Env:WEBSITE_RESOURCE_GROUP).Value
 $websiteOwnerName = (Get-Item -Path Env:WEBSITE_OWNER_NAME).Value
 $pSubscriptionId = ($websiteOwnerName -split "\+")[0]
-
-$items = @{
-    "Env:WEBSITE_RESOURCE_GROUP" = $Env:WEBSITE_RESOURCE_GROUP
-    "Env:WEBSITE_OWNER_NAME"     = $Env:WEBSITE_OWNER_NAME
-    "websiteOwnerName"           = $websiteOwnerName
-    "pSubscriptionId"            = $pSubscriptionId
-}
-
 
 # connecting to publisher side
 Set-AzContext -SubscriptionId $pSubscriptionId
@@ -122,7 +95,6 @@ if (!$pDataShare) {
     
     exit
 }
-
 
 # get all current invites, kill them and issue one new one.
 $invitation = Get-AzDataShareInvitation -AccountName $pDataShareAccountName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name
@@ -219,7 +191,7 @@ foreach ($dataSet in $shareDataSets) {
         
         $body = @{
             "kind"       = "Blob"
-            "name"       = $dataSet.DataSetId
+            "name"       = $dataSet.DataSetId # TODO: Is this property valid
             "properties" = @{
                 "containerName"      = $dataSet.ContainerName
                 "dataSetId"          = $dataSet.DataSetId
