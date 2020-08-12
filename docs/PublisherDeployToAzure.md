@@ -9,9 +9,9 @@ There are 4 ways to deploy the data publisher resources from this repository to 
 3. [Use PowerShell](#deploy-using-powershell)
 4. [Use Azure CLI](#deploy-using-azure-cli)
 
-<a href="https://youtu.be/FM9NlWo6eqk"><img src="./images/Video.png" width="50" style="float:left;align:left;" align="left" target="_blank"></a>
+<a href="https://youtu.be/FM9NlWo6eqk"><img src="./images/Video.png" width="50" style="float:left;align:left;" align="left" target="_blank"></a> You can watch a video of all of these technics to decide which is best for you. The installation techniques are further documented below. Pause at any time to work along with the video.
 
-You can watch a video of all of these technics to decide which is best for you. The installation techniques are further documented below. Pause at any time to work along with the video.
+Pause at any time to work along with the video.
 
 <a href="https://youtu.be/FM9NlWo6eqk">![Slide Thumbnail](./images/06.png)</a>
 

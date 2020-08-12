@@ -3,11 +3,9 @@ using namespace System.Net
 # Input bindings are passed in via param block.
 param($Request, $TriggerMetadata)
 
+
 $DebugPreference = 'Continue'
 $ErrorActionPreference = 'Stop'
-
-# Write-ItemAsJSON -HeaderMessage "Request recieved as a parameter to the function" -Item $Request
-
 
 $provisioningState = $Request.Body.provisioningState
 
@@ -39,7 +37,6 @@ $items = [ordered]@{
     cSubscriptionId    = $cSubscriptionId
     planName           = $planName
 }
-# Write-ItemsAsJson -HeaderMessage "Customer-side variables" -Items $items
 
 # get the managed application information
 $mApplication = $null
@@ -82,13 +79,12 @@ $items = [ordered]@{
     mStorageAccount      = $mStorageAccount
     mTenantId            = $mTenantId
 }
-# Write-ItemsAsJson -HeaderMessage "Managed Application variables" -Items $items
 
 
 # assign roles for the Data Store onto the Storage account 
 Add-RoleToStorage -RoleGuid "ba92f5b4-2d11-453d-a403-e96b0029c9fe" -RoleName "Storage Blob Data Contributor" -StorageAccountId $mStorageAccount.Id -DataShareAccount $mDataShareAccount
 Add-RoleToStorage -RoleGuid "2a2b9908-6ea1-4ae2-8e65-a410df84e7d1" -RoleName "Storage Blob Data Reader" -StorageAccountId $mStorageAccount.Id -DataShareAccount $mDataShareAccount
-Add-RoleToStorage -RoleGuid "b7e6dc6d-f1e8-4753-8033-0f276bb0955b" -RoleName "Storage Blob Data Owner" -StorageAccountId $mStorageAccount.Id -DataShareAccount $mDataShareAccount
+# Add-RoleToStorage -RoleGuid "b7e6dc6d-f1e8-4753-8033-0f276bb0955b" -RoleName "Storage Blob Data Owner" -StorageAccountId $mStorageAccount.Id -DataShareAccount $mDataShareAccount
 
 # Fetching Publisher-side details
 $pResourceGroupName = (Get-Item -Path Env:WEBSITE_RESOURCE_GROUP).Value
@@ -102,7 +98,6 @@ $items = @{
     "pSubscriptionId"            = $pSubscriptionId
 }
 
-# Write-ItemsAsJSON -HeaderMessage "Publisher Variables" -Items $items
 
 # connecting to publisher side
 Set-AzContext -SubscriptionId $pSubscriptionId
@@ -128,7 +123,6 @@ if (!$pDataShare) {
     exit
 }
 
-# Write-ItemAsJSON -HeaderMessage "The Data Share we are synching" -Item $pDataShare
 
 # get all current invites, kill them and issue one new one.
 $invitation = Get-AzDataShareInvitation -AccountName $pDataShareAccountName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name
@@ -141,9 +135,8 @@ if ($invitation) {
 $invitationName = "$($pDataShare.Name)-Invitation"
 $invitation = New-AzDataShareInvitation -AccountName $pDataShareAccountName -Name $invitationName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name -TargetObjectId $mIdentity -TargetTenantId $mTenantId
 
-# Write-ItemAsJSON -HeaderMessage "The Invitation" -Item $invitation
 
-# suppress version warnings
+# suppress version warnings NEW
 Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
 
 # Get the Data Sets before changing contexts
@@ -197,6 +190,7 @@ $body = @{
     }
 } | ConvertTo-Json
 
+
 Try {
     Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
 }
@@ -218,37 +212,45 @@ Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
 
 # Mapping Data Sets
 foreach ($dataSet in $shareDataSets) {
-    
-    Write-Host "Mapping Data Set: $($dataSet.Name)"
 
-    # this handles the blob and container data sets
-    $kind = $null
+    $body = $null
+
     if ($dataset.FilePath) {
-        $kind = "Blob"
+        
+        $body = @{
+            "kind"       = "Blob"
+            "name"       = $dataSet.DataSetId
+            "properties" = @{
+                "containerName"      = $dataSet.ContainerName
+                "dataSetId"          = $dataSet.DataSetId
+                "filePath"           = $dataSet.FilePath
+                "resourceGroup"      = $mResourceGroupName
+                "storageAccountName" = $mStorageAccount.StorageAccountName
+                "subscriptionId"     = $cSubscriptionId
+            }
+        } | ConvertTo-Json
     }
     else {
-        $kind = "Container"
+        $body = @{
+            "kind"       = "Container"
+            "properties" = @{
+                "containerName"      = $dataSet.ContainerName
+                "dataSetId"          = $dataSet.DataSetId
+                "resourceGroup"      = $mResourceGroupName
+                "storageAccountName" = $mStorageAccount.StorageAccountName
+                "subscriptionId"     = $cSubscriptionId
+            }
+        } | ConvertTo-Json
     }
-
-    $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/dataSetMappings/$($dataSet.ContainerName)?api-version=2019-11-01"
-
-    $body = @{
-        "kind"       = $kind
-        "properties" = @{
-            "containerName"      = $dataSet.ContainerName
-            "dataSetId"          = $dataSet.DataSetId
-            "filePath"           = $dataset.FilePath
-            "resourceGroup"      = $mResourceGroupName
-            "storageAccountName" = $mStorageAccount.StorageAccountName
-            "subscriptionId"     = $cSubscriptionId
-        }
-    } | ConvertTo-Json
-
+    
+    $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/dataSetMappings/$($dataSet.DataSetId)?api-version=2019-11-01"
+    
     Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
 }
 
-Write-Host "Start synchronization"
 
+# Start Synchronization
+Write-Host "Start synchronization"
 $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/Synchronize?api-version=2019-11-01"
 $body = @{"synchronizationMode" = "Incremental" } | ConvertTo-Json
 
@@ -298,4 +300,4 @@ Stop-WithHttpOK  $message
 #     # exit
 # }
 
-# Write-ItemAsJSON -MessageHeader "Trigger infomration" -Item $pTrigger
+Write-ItemAsJSON -MessageHeader "Trigger NEW infomration" -Item $pTrigger
