@@ -165,20 +165,10 @@ if ($shareDataSets.Count -eq 0) {
 # TODO: get the pub side trigger here
 Try {
     $pTrigger = Get-AzDataShareTrigger -ResourceGroupName $pResourceGroupName -AccountName $pDataShareAccountName -ShareSubscriptionName $planName
+    Write-Host $body
 }
 catch {
-    
-    $body = "Failed to fetch Trigger from publisher"
-    
-    Write-Host $body
-    Write-Host $_.Exception.Message
-    
-    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-            StatusCode = 404
-            Body       = $body
-        })
-
-    exit
+    $body = "No triggers configured on the publisher subscription."
 }
 
 Set-AzContext -SubscriptionId $cSubscriptionId
@@ -272,17 +262,19 @@ $body = @{"synchronizationMode" = "Incremental" } | ConvertTo-Json
 Invoke-RestMethod -Method POST -Uri $restUri -Headers $headers -Body $body
 
 if ($pTrigger) {
-    $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/triggers/$($pTrigger.Name)?api-version=2019-11-01"
-    $body = @{
-        "kind"       = "$($pTrigger.Type)"
-        "properties" = @{
-            "recurrenceInterval"  = "$($pTrigger.RecurrenceInterval)"
-            "synchronizationMode" = "$($pTrigger.SynchronizationMode)"
-            "synchronizationTime" = "$($pTrigger.SynchronizationTime)"
-        }
-    } | ConvertTo-Json
+    foreach ($trigger in $pTrigger) {
+        $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/triggers/$($trigger.Name)?api-version=2019-11-01"
+        $body = @{
+            "kind"       = "$($trigger.Type)"
+            "properties" = @{
+                "recurrenceInterval"  = "$($trigger.RecurrenceInterval)"
+                "synchronizationMode" = "$($trigger.SynchronizationMode)"
+                "synchronizationTime" = "$($trigger.SynchronizationTime)"
+            }
+        } | ConvertTo-Json
 
-    Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
+        Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
+    }
 }
 
 $message = "Request succeeded. Data sync in progress."
