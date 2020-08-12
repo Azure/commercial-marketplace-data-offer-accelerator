@@ -282,7 +282,7 @@ if ($pTrigger) {
     foreach ($trigger in $pTrigger) {
         $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/triggers/$($trigger.Name)?api-version=2019-11-01"
         $body = @{
-            "kind"       = "$($trigger.Type)"
+            "kind"       = "ScheduleBased"
             "properties" = @{
                 "recurrenceInterval"  = "$($trigger.RecurrenceInterval)"
                 "synchronizationMode" = "$($trigger.SynchronizationMode)"
