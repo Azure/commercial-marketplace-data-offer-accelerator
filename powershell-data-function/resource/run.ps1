@@ -286,7 +286,7 @@ if ($pTrigger) {
             "properties" = @{
                 "recurrenceInterval"  = "$($trigger.RecurrenceInterval)"
                 "synchronizationMode" = "$($trigger.SynchronizationMode)"
-                "synchronizationTime" = "$(($trigger.SynchronizationTime).ToShortTimeString())"
+                "synchronizationTime" = "$($trigger.SynchronizationTime)"
             }
         } | ConvertTo-Json
 
