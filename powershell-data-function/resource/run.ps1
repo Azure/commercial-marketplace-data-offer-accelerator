@@ -55,27 +55,6 @@ Catch [Microsoft.WindowsAzure.Commands.Storage.Common.ResourceNotFoundException]
     exit
 }
 
-<<<<<<< HEAD
-Try {
-    $mApplicationResource = Get-AzResource -ResourceId $cApplicationId
-}
-Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
-    
-    $message = "WARNING: Get-AzResource -ResourceId $cApplicationId FAILED"
-
-    Write-Host $message
-
-    # return an error so we get a retry call later
-    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-            StatusCode = 425
-            Body       = $body
-        })
-
-    exit
-}
-
-=======
->>>>>>> 501b8898c8e373924a1d9d24b786fca5f84f2f78
 $mResourceGroupId = $mApplication.Properties.managedResourceGroupId
 $mResourceGroupName = ($mResourceGroupId -split '/')[4]
 $mIdentity = $mApplicationResource.Identity.PrincipalId
