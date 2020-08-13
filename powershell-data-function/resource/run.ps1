@@ -279,6 +279,8 @@ $body = @{"synchronizationMode" = "Incremental" } | ConvertTo-Json
 Invoke-RestMethod -Method POST -Uri $restUri -Headers $headers -Body $body
 
 if ($pTrigger) {
+    Write-Host "Enable snapshot schedule"
+
     foreach ($trigger in $pTrigger) {
         $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/triggers/$($trigger.Name)?api-version=2019-11-01"
         $body = @{
