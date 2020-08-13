@@ -40,7 +40,7 @@ Try {
     $mApplication = Get-AzManagedApplication -ResourceGroupName $cResourceGroupName -Name $cManagedAppName
     $mApplicationResource = Get-AzResource -ResourceId $cApplicationId
 }
-Catch [Microsoft.WindowsAzure.Commands.Storage.Common.ResourceNotFoundException]{
+Catch [Microsoft.WindowsAzure.Commands.Storage.Common.ResourceNotFoundException] {
     
     $message = "ERROR: Get-AzManagedApplication -ResourceGroupName $cResourceGroupName -Name $cManagedAppName Retry."
     
@@ -48,9 +48,9 @@ Catch [Microsoft.WindowsAzure.Commands.Storage.Common.ResourceNotFoundException]
     
     # return an error so we get a retry call later
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-        StatusCode = 425
-        Body       = $body
-    })
+            StatusCode = 425
+            Body       = $body
+        })
     
     exit
 }
@@ -128,6 +128,7 @@ if ($shareDataSets.Count -eq 0) {
 }
 
 # TODO: get the pub side trigger here
+$pTrigger = Get-AzDataShareSynchronizationSetting -ResourceGroupName $pResourceGroupName -AccountName $pDataShareAccountName -ShareName $planName
 
 Set-AzContext -SubscriptionId $cSubscriptionId
 
@@ -220,15 +221,40 @@ foreach ($dataSet in $shareDataSets) {
     Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
 }
 
-
 # Start Synchronization
-Write-Host "Start synchronization"
-$restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/Synchronize?api-version=2019-11-01"
-$body = @{"synchronizationMode" = "Incremental" } | ConvertTo-Json
+# Check for synchronization operations previously scheduled
+# POST https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.DataShare/accounts/{accountName}/shareSubscriptions/{shareSubscriptionName}/listSynchronizations?api-version=2019-11-01
+Write-Host "Checking for previously scheduled synchronization operations" 
+$restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/listSynchronizations?api-version=2019-11-01"
 
-Invoke-RestMethod -Method POST -Uri $restUri -Headers $headers -Body $body
+$synchronizations = Invoke-RestMethod -Method POST -Uri $restUri -Headers $headers
 
-# TODO: New up the client side trigger here
+if ( !$synchronizations.value) {
+    Write-Host "Start synchronization"
+    $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/Synchronize?api-version=2019-11-01"
+    $body = @{"synchronizationMode" = "Incremental" } | ConvertTo-Json
+
+    Invoke-RestMethod -Method POST -Uri $restUri -Headers $headers -Body $body
+}
+else {
+    Write-Host "Found existing synchronization operatation. Skipping."
+}
+
+if ($pTrigger) {
+    Write-Host "Enable snapshot schedule"
+
+    $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/triggers/$($pTrigger.Name)?api-version=2019-11-01"
+    $body = @{
+        "kind"       = "ScheduleBased"
+        "properties" = @{
+            "recurrenceInterval"  = "$($pTrigger.RecurrenceInterval)"
+            "synchronizationMode" = "$($pTrigger.SynchronizationMode)"
+            "synchronizationTime" = "$($pTrigger.SynchronizationTime)"
+        }
+    } | ConvertTo-Json
+
+    Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
+}
 
 $message = "Request succeeded. Data sync in progress."
 
