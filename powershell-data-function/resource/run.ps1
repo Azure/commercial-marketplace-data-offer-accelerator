@@ -175,7 +175,7 @@ Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
         
         Write-Host $message
         
-        # Stop-WithHttpOK $message
+        Stop-WithHttpOK $message
     
     }
     else {
@@ -235,6 +235,9 @@ if ( !$synchronizations.value) {
     $body = @{"synchronizationMode" = "Incremental" } | ConvertTo-Json
 
     Invoke-RestMethod -Method POST -Uri $restUri -Headers $headers -Body $body
+}
+else {
+    Write-Host "Found existing synchronization operatation. Skipping."
 }
 
 if ($pTrigger) {
