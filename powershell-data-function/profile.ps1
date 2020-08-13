@@ -137,12 +137,20 @@ function Write-ItemAsJson {
     Write-Host ==============================================================================================================
     Write-Host $HeaderMessage
     Write-Host --------------------------------------------------------------------------------------------------------------
-    Write-Host ($Item | ConvertTo-Json)
+    
+    if(!$Item) {
+        Write-Host "Item is null"
+    }
+    else {
+        Write-Host ($Item | ConvertTo-Json)
+    }
+    
     Write-Host ==============================================================================================================
 
 }
 
 function Write-ItemsAsJSON {`
+    
     param(
         [Parameter(Mandatory=$true)]
         [String] $HeaderMessage,
@@ -154,7 +162,7 @@ function Write-ItemsAsJSON {`
     Write-Host ==============================================================================================================
     Write-Host $HeaderMessage
     Write-Host --------------------------------------------------------------------------------------------------------------
-    Write-Host ($Items | ConvertTo-Json)
+    Write-Host ($Items  | ConvertTo-Json)
     Write-Host ==============================================================================================================
 
 }

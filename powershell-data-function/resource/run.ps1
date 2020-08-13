@@ -3,11 +3,9 @@ using namespace System.Net
 # Input bindings are passed in via param block.
 param($Request, $TriggerMetadata)
 
+
 $DebugPreference = 'Continue'
 $ErrorActionPreference = 'Stop'
-
-# Write-ItemAsJSON -HeaderMessage "Request recieved as a parameter to the function" -Item $Request
-
 
 $provisioningState = $Request.Body.provisioningState
 
@@ -30,41 +28,34 @@ $planName = $Request.Body.plan.name
 $a = $cApplicationId -split '/'
 $cSubscriptionId = $a[2]
 $cResourceGroupName = $a[4]
-
-$items = [ordered]@{
-    "env:MSI_ENDPOINT" = $env:MSI_ENDPOINT
-    "env:MSI_SECRET"   = $env:MSI_SECRET
-    cApplicationId     = $cApplicationId
-    cResourceGroupName = $cResourceGroupName
-    cSubscriptionId    = $cSubscriptionId
-    planName           = $planName
-}
-# Write-ItemsAsJson -HeaderMessage "Customer-side variables" -Items $items
+$cManagedAppName = $a[8]
 
 # get the managed application information
 $mApplication = $null
+$mApplicationResource = $null
 
 Try {
     # Sometimes this call fails because the managed application has not completed provisioninng 
-
     # by the time this function gets called
-    $mApplication = Get-AzManagedApplication -ResourceGroupName $cResourceGroupName
+    $mApplication = Get-AzManagedApplication -ResourceGroupName $cResourceGroupName -Name $cManagedAppName
+    $mApplicationResource = Get-AzResource -ResourceId $cApplicationId
 }
-Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
+Catch [Microsoft.WindowsAzure.Commands.Storage.Common.ResourceNotFoundException]{
     
-    $message = "WARNING: Get-AzManagedApplication -ResourceGroupName $cResourceGroupName FAILED"
-
+    $message = "ERROR: Get-AzManagedApplication -ResourceGroupName $cResourceGroupName -Name $cManagedAppName Retry."
+    
     Write-Host $message
-
+    
     # return an error so we get a retry call later
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-            StatusCode = 425
-            Body       = $body
-        })
-
+        StatusCode = 425
+        Body       = $body
+    })
+    
     exit
 }
 
+<<<<<<< HEAD
 Try {
     $mApplicationResource = Get-AzResource -ResourceId $cApplicationId
 }
@@ -83,6 +74,8 @@ Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
     exit
 }
 
+=======
+>>>>>>> 501b8898c8e373924a1d9d24b786fca5f84f2f78
 $mResourceGroupId = $mApplication.Properties.managedResourceGroupId
 $mResourceGroupName = ($mResourceGroupId -split '/')[4]
 $mIdentity = $mApplicationResource.Identity.PrincipalId
@@ -90,36 +83,15 @@ $mDataShareAccount = Get-AzDataShareAccount -ResourceGroupName $mResourceGroupNa
 $mStorageAccount = Get-AzStorageAccount -ResourceGroupName $mResourceGroupName
 $mTenantId = $mApplicationResource.Identity.TenantId
 
-$items = [ordered]@{
-    mApplicationResource = $mApplicationResource
-    mDataShareAccount    = $mDataShareAccount
-    mIdentity            = $mIdentity
-    mResourceGroupId     = $mResourceGroupId
-    mResourceGroupName   = $mResourceGroupName
-    mStorageAccount      = $mStorageAccount
-    mTenantId            = $mTenantId
-}
-# Write-ItemsAsJson -HeaderMessage "Managed Application variables" -Items $items
-
 
 # assign roles for the Data Store onto the Storage account 
 Add-RoleToStorage -RoleGuid "ba92f5b4-2d11-453d-a403-e96b0029c9fe" -RoleName "Storage Blob Data Contributor" -StorageAccountId $mStorageAccount.Id -DataShareAccount $mDataShareAccount
 Add-RoleToStorage -RoleGuid "2a2b9908-6ea1-4ae2-8e65-a410df84e7d1" -RoleName "Storage Blob Data Reader" -StorageAccountId $mStorageAccount.Id -DataShareAccount $mDataShareAccount
-Add-RoleToStorage -RoleGuid "b7e6dc6d-f1e8-4753-8033-0f276bb0955b" -RoleName "Storage Blob Data Owner" -StorageAccountId $mStorageAccount.Id -DataShareAccount $mDataShareAccount
 
 # Fetching Publisher-side details
 $pResourceGroupName = (Get-Item -Path Env:WEBSITE_RESOURCE_GROUP).Value
 $websiteOwnerName = (Get-Item -Path Env:WEBSITE_OWNER_NAME).Value
 $pSubscriptionId = ($websiteOwnerName -split "\+")[0]
-
-$items = @{
-    "Env:WEBSITE_RESOURCE_GROUP" = $Env:WEBSITE_RESOURCE_GROUP
-    "Env:WEBSITE_OWNER_NAME"     = $Env:WEBSITE_OWNER_NAME
-    "websiteOwnerName"           = $websiteOwnerName
-    "pSubscriptionId"            = $pSubscriptionId
-}
-
-# Write-ItemsAsJSON -HeaderMessage "Publisher Variables" -Items $items
 
 # connecting to publisher side
 Set-AzContext -SubscriptionId $pSubscriptionId
@@ -145,8 +117,6 @@ if (!$pDataShare) {
     exit
 }
 
-# Write-ItemAsJSON -HeaderMessage "The Data Share we are synching" -Item $pDataShare
-
 # get all current invites, kill them and issue one new one.
 $invitation = Get-AzDataShareInvitation -AccountName $pDataShareAccountName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name
 
@@ -158,9 +128,8 @@ if ($invitation) {
 $invitationName = "$($pDataShare.Name)-Invitation"
 $invitation = New-AzDataShareInvitation -AccountName $pDataShareAccountName -Name $invitationName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name -TargetObjectId $mIdentity -TargetTenantId $mTenantId
 
-# Write-ItemAsJSON -HeaderMessage "The Invitation" -Item $invitation
 
-# suppress version warnings
+# suppress version warnings NEW
 Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
 
 # Get the Data Sets before changing contexts
@@ -221,6 +190,7 @@ $body = @{
     }
 } | ConvertTo-Json
 
+
 Try {
     Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
 }
@@ -242,37 +212,45 @@ Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
 
 # Mapping Data Sets
 foreach ($dataSet in $shareDataSets) {
-    
-    Write-Host "Mapping Data Set: $($dataSet.Name)"
 
-    # this handles the blob and container data sets
-    $kind = $null
+    $body = $null
+
     if ($dataset.FilePath) {
-        $kind = "Blob"
+        
+        $body = @{
+            "kind"       = "Blob"
+            "name"       = $dataSet.DataSetId # TODO: Is this property valid
+            "properties" = @{
+                "containerName"      = $dataSet.ContainerName
+                "dataSetId"          = $dataSet.DataSetId
+                "filePath"           = $dataSet.FilePath
+                "resourceGroup"      = $mResourceGroupName
+                "storageAccountName" = $mStorageAccount.StorageAccountName
+                "subscriptionId"     = $cSubscriptionId
+            }
+        } | ConvertTo-Json
     }
     else {
-        $kind = "Container"
+        $body = @{
+            "kind"       = "Container"
+            "properties" = @{
+                "containerName"      = $dataSet.ContainerName
+                "dataSetId"          = $dataSet.DataSetId
+                "resourceGroup"      = $mResourceGroupName
+                "storageAccountName" = $mStorageAccount.StorageAccountName
+                "subscriptionId"     = $cSubscriptionId
+            }
+        } | ConvertTo-Json
     }
-
-    $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/dataSetMappings/$($dataSet.ContainerName)?api-version=2019-11-01"
-
-    $body = @{
-        "kind"       = $kind
-        "properties" = @{
-            "containerName"      = $dataSet.ContainerName
-            "dataSetId"          = $dataSet.DataSetId
-            "filePath"           = $dataset.FilePath
-            "resourceGroup"      = $mResourceGroupName
-            "storageAccountName" = $mStorageAccount.StorageAccountName
-            "subscriptionId"     = $cSubscriptionId
-        }
-    } | ConvertTo-Json
-
+    
+    $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/dataSetMappings/$($dataSet.DataSetId)?api-version=2019-11-01"
+    
     Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
 }
 
-Write-Host "Start synchronization"
 
+# Start Synchronization
+Write-Host "Start synchronization"
 $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/Synchronize?api-version=2019-11-01"
 $body = @{"synchronizationMode" = "Incremental" } | ConvertTo-Json
 
@@ -338,4 +316,4 @@ Stop-WithHttpOK  $message
 #     # exit
 # }
 
-# Write-ItemAsJSON -MessageHeader "Trigger infomration" -Item $pTrigger
+Write-ItemAsJSON -MessageHeader "Trigger NEW infomration" -Item $pTrigger
