@@ -16,7 +16,7 @@ if ($provisioningState -ne "Succeeded") {
     
     Write-Host $returnMessage
     
-    Stop-WithHttpOK $returnMessage
+    Stop-WithHttp  -Message $returnMessage
 }
 
 $cAccessToken = Get-ClientAccessToken
@@ -175,7 +175,7 @@ Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
         
         Write-Host $message
         
-        Stop-WithHttpOK $message
+        Stop-WithHttp$message
     
     }
     else {
@@ -259,7 +259,7 @@ if ($pTrigger) {
 $message = "Request succeeded. Data sync in progress."
 
 Write-Host $message
-Stop-WithHttpOK  $message
+Stop-WithHttp $message
 
 
 # 1. Create share subscription    
