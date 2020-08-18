@@ -16,7 +16,7 @@ if ($provisioningState -ne "Succeeded") {
     
     Write-Host $returnMessage
     
-    Stop-WithHttp  -Message $returnMessage
+    Stop-WithHttpOK $returnMessage
 }
 
 $cAccessToken = Get-ClientAccessToken
@@ -175,7 +175,7 @@ Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
         
         Write-Host $message
         
-        Stop-WithHttp$message
+        Stop-WithHttpOK $message
     
     }
     else {
@@ -259,43 +259,4 @@ if ($pTrigger) {
 $message = "Request succeeded. Data sync in progress."
 
 Write-Host $message
-Stop-WithHttp $message
-
-
-# 1. Create share subscription    
-# 2. Create dataset mappings
-# 3. Start the synch of data
-# 4. Create a client trigger to update at the same time and interval as the publisher's trigger
-
-# Write-Host "Creating client side Trigger"
-# New-AzDataShareTrigger  -ResourceGroupName $mResourceGroupName `
-#                         -AccountName $mDataShareAccount.Name `
-#                         -ShareSubscriptionName $planName `
-#                         -Name $pTrigger.Name `
-#                         -RecurrenceInterval $pTrigger.RecurrenceInterval `
-#                         -SynchronizationTime $pTrigger.SynchronizationTime
-
-
-# Get the publisher side sync trigger
-# $pTrigger = $null
-
-# Try {
-
-#     $pTrigger = Get-AzDataShareTrigger -ResourceGroupName $pResourceGroupName -AccountName $pDataShareAccountName -ShareSubscriptionName $planName
-# }
-# catch {
-    
-#     $body = "Failed to fetch Trigger from publisher"
-    
-#     Write-Host $body
-#     Write-Host $_.Exception.Message
-    
-#     # Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-#     #         StatusCode = 404
-#     #         Body       = $body
-#     #     })
-
-#     # exit
-# }
-
-Write-ItemAsJSON -MessageHeader "Trigger NEW infomration" -Item $pTrigger
+Stop-WithHttpOK $message 
