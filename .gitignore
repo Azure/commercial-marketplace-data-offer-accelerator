@@ -361,3 +361,4 @@ __MACOSX/
 **/.DS_Store
 InvokeFunctionTest.ps1
 install/partner-center-config/app.zip
+install/publisher-azure/functionapp/functionapp.zip
