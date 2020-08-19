@@ -46,13 +46,7 @@ Catch [Microsoft.WindowsAzure.Commands.Storage.Common.ResourceNotFoundException]
     
     Write-Host $message
     
-    # return an error so we get a retry call later
-    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-            StatusCode = 425
-            Body       = $body
-        })
-    
-    exit
+    Stop-WithHttp -Message $message -StatusCode 425
 }
 
 $mResourceGroupId = $mApplication.Properties.managedResourceGroupId
@@ -82,17 +76,12 @@ $pDataShare = Get-AzDataShare -Name $planName -ResourceGroupName $pResourceGroup
 
 if (!$pDataShare) {
     
-    $returnMessage = "No Data Share Account '$pDataShareAccountName' found\n\n$errorInfo"
+    $message = "No Data Share Account '$pDataShareAccountName' found\n\n$errorInfo"
     
-    Write-Host $returnMessage
+    Write-Host $message
     
-    $body = @{ "message" = $returnMessage } | ConvertTo-Json
-    
-    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-            StatusCode = 404
-            Body       = $body
-        })
-    
+    Stop-WithHttp -Message $message -StatusCode 404
+
     exit
 }
 
@@ -107,7 +96,6 @@ if ($invitation) {
 $invitationName = "$($pDataShare.Name)-Invitation"
 $invitation = New-AzDataShareInvitation -AccountName $pDataShareAccountName -Name $invitationName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name -TargetObjectId $mIdentity -TargetTenantId $mTenantId
 
-
 # suppress version warnings NEW
 Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
 
@@ -116,15 +104,11 @@ $shareDataSets = Get-AzDataShareDataSet -AccountName $pDataShareAccountName -Res
 
 if ($shareDataSets.Count -eq 0) {
 
-    $body = "No Data Sets in publisher Data Share: $pDataShareAccountName => $($pDataShare.Name)"
-    Write-Host $body
+    $message = "No Data Sets in publisher Data Share: $pDataShareAccountName => $($pDataShare.Name)"
 
-    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-            StatusCode = 404
-            Body       = $body
-        })
-
-    exit
+    Write-Host $message
+    
+    Stop-WithHttp -Message $message -StatusCode 404
 }
 
 # Get the pub side trigger here
@@ -174,9 +158,8 @@ Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
         $message = "WARNING: Data Share Subscription '$planName' already assigned. Existing with HTTP 200 to stop retries."
         
         Write-Host $message
-        
-        Stop-WithHttp$message
     
+        Stop-WithHttp -Message $message
     }
     else {
         throw $_
@@ -241,12 +224,12 @@ if ($pTrigger) {
     } | ConvertTo-Json
 
     Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
-    Write-ItemAsJSON -MessageHeader "Trigger NEW infomration" -Item $pTrigger
+    # Write-ItemAsJSON -HeaderMessage "Trigger NEW infomration" -Item $pTrigger
 }
 
 $message = "Request succeeded. Data sync in progress."
 
 Write-Host $message
-Stop-WithHttp $message
+Stop-WithHttp -Message $message
 
 
