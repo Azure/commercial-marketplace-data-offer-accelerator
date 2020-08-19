@@ -127,7 +127,7 @@ if ($shareDataSets.Count -eq 0) {
     exit
 }
 
-# TODO: get the pub side trigger here
+# Get the pub side trigger here
 $pTrigger = Get-AzDataShareSynchronizationSetting -ResourceGroupName $pResourceGroupName -AccountName $pDataShareAccountName -ShareName $planName
 
 Set-AzContext -SubscriptionId $cSubscriptionId
@@ -175,7 +175,7 @@ Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
         
         Write-Host $message
         
-        Stop-WithHttp$message
+        Stop-WithHttpOK $message
     
     }
     else {
@@ -192,7 +192,7 @@ foreach ($dataSet in $shareDataSets) {
         
         $body = @{
             "kind"       = "Blob"
-            "name"       = $dataSet.DataSetId # TODO: Is this property valid
+            "name"       = $dataSet.DataSetId
             "properties" = @{
                 "containerName"      = $dataSet.ContainerName
                 "dataSetId"          = $dataSet.DataSetId
@@ -259,4 +259,4 @@ if ($pTrigger) {
 $message = "Request succeeded. Data sync in progress."
 
 Write-Host $message
-Stop-WithHttp $message
+Stop-WithHttpOK $message
