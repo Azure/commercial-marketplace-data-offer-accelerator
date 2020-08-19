@@ -127,7 +127,7 @@ if ($shareDataSets.Count -eq 0) {
     exit
 }
 
-# TODO: get the pub side trigger here
+# Get the pub side trigger here
 $pTrigger = Get-AzDataShareSynchronizationSetting -ResourceGroupName $pResourceGroupName -AccountName $pDataShareAccountName -ShareName $planName
 
 Set-AzContext -SubscriptionId $cSubscriptionId
@@ -188,34 +188,21 @@ foreach ($dataSet in $shareDataSets) {
 
     $body = $null
 
-    if ($dataset.FilePath) {
-        
-        $body = @{
-            "kind"       = "Blob"
-            "name"       = $dataSet.DataSetId # TODO: Is this property valid
-            "properties" = @{
-                "containerName"      = $dataSet.ContainerName
-                "dataSetId"          = $dataSet.DataSetId
-                "filePath"           = $dataSet.FilePath
-                "resourceGroup"      = $mResourceGroupName
-                "storageAccountName" = $mStorageAccount.StorageAccountName
-                "subscriptionId"     = $cSubscriptionId
-            }
-        } | ConvertTo-Json
+    switch ($dataSet) {
+        {$dataSet.Prefix} { 
+            Write-Host "FOLDER: $($dataSet.Prefix)"
+            $body = New-FolderRestBody -DataSet $dataSet -ResourceGroupname $mResourceGroupName -StorageAccountName $mStorageAccount.StorageAccountName -SubscriptionId $cSubscriptionId
+         }
+         {$dataSet.FilePath} { 
+            Write-Host "BLOB: $($dataSet.FilePath)"
+            $body = New-BlobRestBody -DataSet $dataSet -ResourceGroupname $mResourceGroupName -StorageAccountName $mStorageAccount.StorageAccountName -SubscriptionId $cSubscriptionId
+         }
+        Default {
+            Write-Host "CONTAINER: $($dataSet.ContainerName)"
+            $body = New-ContainerRestBody -DataSet $dataSet -ResourceGroupname $mResourceGroupName -StorageAccountName $mStorageAccount.StorageAccountName -SubscriptionId $cSubscriptionId
+        }
     }
-    else {
-        $body = @{
-            "kind"       = "Container"
-            "properties" = @{
-                "containerName"      = $dataSet.ContainerName
-                "dataSetId"          = $dataSet.DataSetId
-                "resourceGroup"      = $mResourceGroupName
-                "storageAccountName" = $mStorageAccount.StorageAccountName
-                "subscriptionId"     = $cSubscriptionId
-            }
-        } | ConvertTo-Json
-    }
-    
+
     $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/dataSetMappings/$($dataSet.DataSetId)?api-version=2019-11-01"
     
     Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
@@ -254,6 +241,7 @@ if ($pTrigger) {
     } | ConvertTo-Json
 
     Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
+    Write-ItemAsJSON -MessageHeader "Trigger NEW infomration" -Item $pTrigger
 }
 
 $message = "Request succeeded. Data sync in progress."
@@ -262,40 +250,3 @@ Write-Host $message
 Stop-WithHttp $message
 
 
-# 1. Create share subscription    
-# 2. Create dataset mappings
-# 3. Start the synch of data
-# 4. Create a client trigger to update at the same time and interval as the publisher's trigger
-
-# Write-Host "Creating client side Trigger"
-# New-AzDataShareTrigger  -ResourceGroupName $mResourceGroupName `
-#                         -AccountName $mDataShareAccount.Name `
-#                         -ShareSubscriptionName $planName `
-#                         -Name $pTrigger.Name `
-#                         -RecurrenceInterval $pTrigger.RecurrenceInterval `
-#                         -SynchronizationTime $pTrigger.SynchronizationTime
-
-
-# Get the publisher side sync trigger
-# $pTrigger = $null
-
-# Try {
-
-#     $pTrigger = Get-AzDataShareTrigger -ResourceGroupName $pResourceGroupName -AccountName $pDataShareAccountName -ShareSubscriptionName $planName
-# }
-# catch {
-    
-#     $body = "Failed to fetch Trigger from publisher"
-    
-#     Write-Host $body
-#     Write-Host $_.Exception.Message
-    
-#     # Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-#     #         StatusCode = 404
-#     #         Body       = $body
-#     #     })
-
-#     # exit
-# }
-
-Write-ItemAsJSON -MessageHeader "Trigger NEW infomration" -Item $pTrigger
