@@ -202,9 +202,11 @@ function Get-ClientAccessToken() {
 function Stop-WithHttp() {
 
     param (
+        # Default is "Request Succeeded"
         [Parameter(Mandatory=$false)]
         [String] $Message,
 
+        #  Default is OK/200
         [Parameter(Mandatory=$false)]
         [HttpStatusCode] $StatusCode
     )

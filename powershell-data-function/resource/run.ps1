@@ -12,11 +12,11 @@ $provisioningState = $Request.Body.provisioningState
 # ensure this a Reqeust we want to handle
 if ($provisioningState -ne "Succeeded") {
     
-    $returnMessage = "Exiting without any processing of Azure resources. Request has '$provisioningState' instead of 'Succeeded' provisioning state."
+    $message = "Exiting without any processing of Azure resources. Request has '$provisioningState' instead of 'Succeeded' provisioning state."
     
-    Write-Host $returnMessage
+    Write-Host $message
     
-    Stop-WithHttp  -Message $returnMessage
+    Stop-WithHttp  -Message $message
 }
 
 $cAccessToken = Get-ClientAccessToken
@@ -81,8 +81,6 @@ if (!$pDataShare) {
     Write-Host $message
     
     Stop-WithHttp -Message $message -StatusCode 404
-
-    exit
 }
 
 # get all current invites, kill them and issue one new one.
@@ -96,6 +94,7 @@ if ($invitation) {
 $invitationName = "$($pDataShare.Name)-Invitation"
 $invitation = New-AzDataShareInvitation -AccountName $pDataShareAccountName -Name $invitationName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name -TargetObjectId $mIdentity -TargetTenantId $mTenantId
 
+
 # suppress version warnings NEW
 Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
 
@@ -104,11 +103,13 @@ $shareDataSets = Get-AzDataShareDataSet -AccountName $pDataShareAccountName -Res
 
 if ($shareDataSets.Count -eq 0) {
 
-    $message = "No Data Sets in publisher Data Share: $pDataShareAccountName => $($pDataShare.Name)"
+    $message = "No Data Sets in publisher Data Share: $pDataShareAccountName : $($pDataShare.Name)"
 
     Write-Host $message
-    
+
     Stop-WithHttp -Message $message -StatusCode 404
+
+    exit
 }
 
 # Get the pub side trigger here
@@ -158,8 +159,9 @@ Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
         $message = "WARNING: Data Share Subscription '$planName' already assigned. Existing with HTTP 200 to stop retries."
         
         Write-Host $message
+        
+        Stop-WithHttp -Message $message -StatusCode 200
     
-        Stop-WithHttp -Message $message
     }
     else {
         throw $_
@@ -173,15 +175,12 @@ foreach ($dataSet in $shareDataSets) {
 
     switch ($dataSet) {
         {$dataSet.Prefix} { 
-            Write-Host "FOLDER: $($dataSet.Prefix)"
             $body = New-FolderRestBody -DataSet $dataSet -ResourceGroupname $mResourceGroupName -StorageAccountName $mStorageAccount.StorageAccountName -SubscriptionId $cSubscriptionId
          }
          {$dataSet.FilePath} { 
-            Write-Host "BLOB: $($dataSet.FilePath)"
             $body = New-BlobRestBody -DataSet $dataSet -ResourceGroupname $mResourceGroupName -StorageAccountName $mStorageAccount.StorageAccountName -SubscriptionId $cSubscriptionId
          }
         Default {
-            Write-Host "CONTAINER: $($dataSet.ContainerName)"
             $body = New-ContainerRestBody -DataSet $dataSet -ResourceGroupname $mResourceGroupName -StorageAccountName $mStorageAccount.StorageAccountName -SubscriptionId $cSubscriptionId
         }
     }
@@ -224,12 +223,9 @@ if ($pTrigger) {
     } | ConvertTo-Json
 
     Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
-    # Write-ItemAsJSON -HeaderMessage "Trigger NEW infomration" -Item $pTrigger
 }
 
 $message = "Request succeeded. Data sync in progress."
 
 Write-Host $message
 Stop-WithHttp -Message $message
-
-
