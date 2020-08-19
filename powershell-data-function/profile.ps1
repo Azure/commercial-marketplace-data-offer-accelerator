@@ -199,18 +199,33 @@ function Get-ClientAccessToken() {
     return $tokenResponse.access_token
 }
 
-function Stop-WithHttpOK ($message) {
-    
-    if (!$message) {
-        $message = "Request Suceeded"
+function Stop-WithHttp() {
+
+    param (
+        # Default is "Request Succeeded"
+        [Parameter(Mandatory=$false)]
+        [String] $Message,
+
+        #  Default is OK/200
+        [Parameter(Mandatory=$false)]
+        [HttpStatusCode] $StatusCode
+    )
+
+    if (!$Message) {
+        $Message = "Request Suceeded"
+        $StatusCode = [HttpStatusCode]::OK
+    }
+
+    if(!$StatusCode) {
+        $StatusCode = [HttpStatusCode]::OK
     }
 
     $body = @{
-        "message" = $message
+        "message" = $Message
     } | ConvertTo-Json
 
     Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-            StatusCode = [HttpStatusCode]::OK
+            StatusCode = $StatusCode
             Body       = $body
         }
     )

@@ -45,14 +45,8 @@ Catch [Microsoft.WindowsAzure.Commands.Storage.Common.ResourceNotFoundException]
     $message = "ERROR: Get-AzManagedApplication -ResourceGroupName $cResourceGroupName -Name $cManagedAppName Retry."
     
     Write-Host $message
-    
-    # return an error so we get a retry call later
-    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-            StatusCode = 425
-            Body       = $body
-        })
-    
-    exit
+
+    Stop-WithHttp -Message $message -StatusCode 425
 }
 
 $mResourceGroupId = $mApplication.Properties.managedResourceGroupId
@@ -82,18 +76,11 @@ $pDataShare = Get-AzDataShare -Name $planName -ResourceGroupName $pResourceGroup
 
 if (!$pDataShare) {
     
-    $returnMessage = "No Data Share Account '$pDataShareAccountName' found\n\n$errorInfo"
+    $message = "No Data Share Account '$pDataShareAccountName' found\n\n$errorInfo"
     
-    Write-Host $returnMessage
-    
-    $body = @{ "message" = $returnMessage } | ConvertTo-Json
-    
-    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-            StatusCode = 404
-            Body       = $body
-        })
-    
-    exit
+    Write-Host $message
+
+    Stop-WithHttp -Message $message -StatusCode 404
 }
 
 # get all current invites, kill them and issue one new one.
@@ -119,12 +106,7 @@ if ($shareDataSets.Count -eq 0) {
     $body = "No Data Sets in publisher Data Share: $pDataShareAccountName => $($pDataShare.Name)"
     Write-Host $body
 
-    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-            StatusCode = 404
-            Body       = $body
-        })
-
-    exit
+    Stop-WithHttp -Message $body -StatusCode 404
 }
 
 # Get the pub side trigger here
@@ -175,7 +157,7 @@ Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
         
         Write-Host $message
         
-        Stop-WithHttp$message
+        Stop-WithHttp -Message $message -StatusCode 200
     
     }
     else {
@@ -190,15 +172,12 @@ foreach ($dataSet in $shareDataSets) {
 
     switch ($dataSet) {
         {$dataSet.Prefix} { 
-            Write-Host "FOLDER: $($dataSet.Prefix)"
             $body = New-FolderRestBody -DataSet $dataSet -ResourceGroupname $mResourceGroupName -StorageAccountName $mStorageAccount.StorageAccountName -SubscriptionId $cSubscriptionId
          }
          {$dataSet.FilePath} { 
-            Write-Host "BLOB: $($dataSet.FilePath)"
             $body = New-BlobRestBody -DataSet $dataSet -ResourceGroupname $mResourceGroupName -StorageAccountName $mStorageAccount.StorageAccountName -SubscriptionId $cSubscriptionId
          }
         Default {
-            Write-Host "CONTAINER: $($dataSet.ContainerName)"
             $body = New-ContainerRestBody -DataSet $dataSet -ResourceGroupname $mResourceGroupName -StorageAccountName $mStorageAccount.StorageAccountName -SubscriptionId $cSubscriptionId
         }
     }
@@ -246,47 +225,4 @@ if ($pTrigger) {
 $message = "Request succeeded. Data sync in progress."
 
 Write-Host $message
-<<<<<<< HEAD
 Stop-WithHttp $message
-
-
-# 1. Create share subscription    
-# 2. Create dataset mappings
-# 3. Start the synch of data
-# 4. Create a client trigger to update at the same time and interval as the publisher's trigger
-
-# Write-Host "Creating client side Trigger"
-# New-AzDataShareTrigger  -ResourceGroupName $mResourceGroupName `
-#                         -AccountName $mDataShareAccount.Name `
-#                         -ShareSubscriptionName $planName `
-#                         -Name $pTrigger.Name `
-#                         -RecurrenceInterval $pTrigger.RecurrenceInterval `
-#                         -SynchronizationTime $pTrigger.SynchronizationTime
-
-
-# Get the publisher side sync trigger
-# $pTrigger = $null
-
-# Try {
-
-#     $pTrigger = Get-AzDataShareTrigger -ResourceGroupName $pResourceGroupName -AccountName $pDataShareAccountName -ShareSubscriptionName $planName
-# }
-# catch {
-    
-#     $body = "Failed to fetch Trigger from publisher"
-    
-#     Write-Host $body
-#     Write-Host $_.Exception.Message
-    
-#     # Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-#     #         StatusCode = 404
-#     #         Body       = $body
-#     #     })
-
-#     # exit
-# }
-
-Write-ItemAsJSON -MessageHeader "Trigger NEW infomration" -Item $pTrigger
-=======
-Stop-WithHttpOK $message
->>>>>>> david
