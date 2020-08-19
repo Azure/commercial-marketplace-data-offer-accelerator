@@ -6,8 +6,8 @@
   },
   "logging": {
     "logLevel": {
-      "default": "Warning",
-      "Function": "Error"
+      "default": "Information",
+      "Function": "Information"
     }
   },
   "managedDependency": {

@@ -188,34 +188,21 @@ foreach ($dataSet in $shareDataSets) {
 
     $body = $null
 
-    if ($dataset.FilePath) {
-        
-        $body = @{
-            "kind"       = "Blob"
-            "name"       = $dataSet.DataSetId
-            "properties" = @{
-                "containerName"      = $dataSet.ContainerName
-                "dataSetId"          = $dataSet.DataSetId
-                "filePath"           = $dataSet.FilePath
-                "resourceGroup"      = $mResourceGroupName
-                "storageAccountName" = $mStorageAccount.StorageAccountName
-                "subscriptionId"     = $cSubscriptionId
-            }
-        } | ConvertTo-Json
+    switch ($dataSet) {
+        {$dataSet.Prefix} { 
+            Write-Host "FOLDER: $($dataSet.Prefix)"
+            $body = New-FolderRestBody -DataSet $dataSet -ResourceGroupname $mResourceGroupName -StorageAccountName $mStorageAccount.StorageAccountName -SubscriptionId $cSubscriptionId
+         }
+         {$dataSet.FilePath} { 
+            Write-Host "BLOB: $($dataSet.FilePath)"
+            $body = New-BlobRestBody -DataSet $dataSet -ResourceGroupname $mResourceGroupName -StorageAccountName $mStorageAccount.StorageAccountName -SubscriptionId $cSubscriptionId
+         }
+        Default {
+            Write-Host "CONTAINER: $($dataSet.ContainerName)"
+            $body = New-ContainerRestBody -DataSet $dataSet -ResourceGroupname $mResourceGroupName -StorageAccountName $mStorageAccount.StorageAccountName -SubscriptionId $cSubscriptionId
+        }
     }
-    else {
-        $body = @{
-            "kind"       = "Container"
-            "properties" = @{
-                "containerName"      = $dataSet.ContainerName
-                "dataSetId"          = $dataSet.DataSetId
-                "resourceGroup"      = $mResourceGroupName
-                "storageAccountName" = $mStorageAccount.StorageAccountName
-                "subscriptionId"     = $cSubscriptionId
-            }
-        } | ConvertTo-Json
-    }
-    
+
     $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/dataSetMappings/$($dataSet.DataSetId)?api-version=2019-11-01"
     
     Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
