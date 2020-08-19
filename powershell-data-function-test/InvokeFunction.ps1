@@ -10,7 +10,7 @@
 
 # Fill out variables with real values
 $cApplicationName = "<Name of the Managed Application in the client's tenant>"
-$cResourceGroup = "<Client Resource Group Name>"
+$cResourceGroup = "<Name of the Managed Application's Resource Group in the client's tenant>"
 $cSubscription = "<Client Subscription ID>"
 $planName = "<ID of the Plan being purchased from Partner Center>"
 $functionUri = "<Azure Function URL>/api/resource"

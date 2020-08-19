@@ -6,7 +6,6 @@
 # vscode config files
 .vscode
 
-
 # User-specific files
 *.rsuser
 *.suo
