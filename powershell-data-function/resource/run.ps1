@@ -175,7 +175,7 @@ Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
         
         Write-Host $message
         
-        Stop-WithHttpOK $message
+        Stop-WithHttp$message
     
     }
     else {
@@ -259,4 +259,4 @@ if ($pTrigger) {
 $message = "Request succeeded. Data sync in progress."
 
 Write-Host $message
-Stop-WithHttpOK $message 
+Stop-WithHttp $message
