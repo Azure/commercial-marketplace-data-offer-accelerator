@@ -6,6 +6,99 @@
 
 
 
+function New-BlobRestBody () {
+
+    param(
+        [Parameter(Mandatory=$true)]
+        [Microsoft.Azure.PowerShell.Cmdlets.DataShare.Models.PSDataShareDataSet] $DataSet,
+
+        [Parameter(Mandatory=$true)]
+        [String] $StorageAccountName,
+
+        [Parameter(Mandatory=$true)]
+        [String] $ResourceGroupname,
+
+        [Parameter(Mandatory=$true)]
+        [String] $SubscriptionId
+    )
+
+    $body = @{
+        "kind"       = "Blob"
+        "name"       = $DataSet.DataSetId
+        "properties" = @{
+            "containerName"      = $DataSet.ContainerName
+            "dataSetId"          = $DataSet.DataSetId
+            "filePath"           = $DataSet.FilePath
+            "resourceGroup"      = $ResourceGroupName
+            "storageAccountName" = $StorageAccountName
+            "subscriptionId"     = $SubscriptionId
+        }
+    } | ConvertTo-Json
+
+    return $body
+}
+
+function New-ContainerRestBody () {
+
+    param(
+        [Parameter(Mandatory=$true)]
+        [Microsoft.Azure.PowerShell.Cmdlets.DataShare.Models.PSDataShareDataSet] $DataSet,
+
+        [Parameter(Mandatory=$true)]
+        [String] $StorageAccountName,
+
+        [Parameter(Mandatory=$true)]
+        [String] $ResourceGroupname,
+
+        [Parameter(Mandatory=$true)]
+        [String] $SubscriptionId
+    )
+
+    $body = @{
+        "kind"       = "Container"
+        "properties" = @{
+            "containerName"      = $DataSet.ContainerName
+            "dataSetId"          = $DataSet.DataSetId
+            "resourceGroup"      = $ResourceGroupName
+            "storageAccountName" = $StorageAccountName
+            "subscriptionId"     = $SubscriptionId
+        }
+    } | ConvertTo-Json
+
+    return $body
+}
+
+function New-FolderRestBody () {
+
+    param(
+        [Parameter(Mandatory=$true)]
+        [Microsoft.Azure.PowerShell.Cmdlets.DataShare.Models.PSDataShareDataSet] $DataSet,
+
+        [Parameter(Mandatory=$true)]
+        [String] $StorageAccountName,
+
+        [Parameter(Mandatory=$true)]
+        [String] $ResourceGroupname,
+
+        [Parameter(Mandatory=$true)]
+        [String] $SubscriptionId
+    )
+
+    $body = @{
+        "kind"       = "BlobFolder"
+        "properties" = @{
+            "containerName"      = $DataSet.ContainerName
+            "dataSetId"          = $DataSet.DataSetId
+            "prefix"             = $DataSet.Prefix
+            "resourceGroup"      = $ResourceGroupName
+            "storageAccountName" = $StorageAccountName
+            "subscriptionId"     = $SubscriptionId
+        }
+    } | ConvertTo-Json
+
+    return $body
+}
+
 function Add-RoleToStorage() {
 
     param(
@@ -137,14 +230,7 @@ function Write-ItemAsJson {
     Write-Host ==============================================================================================================
     Write-Host $HeaderMessage
     Write-Host --------------------------------------------------------------------------------------------------------------
-    
-    if(!$Item) {
-        Write-Host "Item is null"
-    }
-    else {
-        Write-Host ($Item | ConvertTo-Json)
-    }
-    
+    Write-Host ($Item | ConvertTo-Json)
     Write-Host ==============================================================================================================
 
 }
