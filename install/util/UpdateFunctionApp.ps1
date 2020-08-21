@@ -31,9 +31,9 @@ if ($updateApp)
   Write-Host "Updating function app..."
   if ( "[environment]::OSVersion.Platform" -eq "Unix")
   {
-    Start-Process -FilePath "pwsh" -Args "Publish-AzWebapp -ResourceGroupName $resourceGroup -Name $functionAppName -ArchivePath (Resolve-Path $destinationPath).Path"
+    Start-Process -FilePath "pwsh" -Args "-Command Publish-AzWebapp -ResourceGroupName $resourceGroup -Name $functionAppName -ArchivePath (Resolve-Path $destinationPath).Path -Force"
   } else {
-    Start-Process -FilePath "powershell.exe" -Args "Publish-AzWebapp -ResourceGroupName $resourceGroup -Name $functionAppName -ArchivePath (Resolve-Path $destinationPath).Path"
+    Start-Process -FilePath "powershell.exe" -Args "Publish-AzWebapp -ResourceGroupName $resourceGroup -Name $functionAppName -ArchivePath (Resolve-Path $destinationPath).Path -Force"
   }
 }
 
