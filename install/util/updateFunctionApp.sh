@@ -18,4 +18,10 @@ else
     echo Azure CLI found, continuing...
 fi
 
+if [ $(az account show -o tsv --query id 2>&1 |wc -c) -eq 40 ]
+then
+    echo -e \\n please follow the instructions below to connect to your Azure subscription...
+    az login -o tsv
+fi
+
 az functionapp deployment source config-zip -g $resourceGroup -n $functionAppName --src $zipFile
