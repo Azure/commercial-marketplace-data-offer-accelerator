@@ -14,6 +14,7 @@ Below are instructions, videos, and helpful resources to publish Data Offers on 
 
 1. [Logical architecture overview](docs/Architecture.md)
 1. [Deploy publisher Azure resources](docs/PublisherDeployToAzure.md)
+    - [Update Function Code](docs/UpdateFunction.md)
 1. [Assign Permissions for raw Data Storage accounts](docs/SetPermissionsOnRawData.md)
 1. [Create a Data Share in your Data Share account](docs/CreateDataShare.md)
 1. [Preparing Plan artifacts for the Partner Center portal](docs/PreparePlan.md)
