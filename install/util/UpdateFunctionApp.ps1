@@ -6,7 +6,7 @@ if(!(Get-AzContext)) {
   Connect-AzAccount
 }
 
-if (Test-Path "../publisher-azure/functionapp/functionapp.zip") {
+if (Test-Path "$destinationPath") {
   Remove-Item -Path $destinationPath
 }
 
