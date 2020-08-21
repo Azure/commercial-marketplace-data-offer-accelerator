@@ -1,6 +1,6 @@
 $destinationPath = "../publisher-azure/functionapp/functionapp.zip"
-$resourceGroup = "ec-data-share-east-rg"
-$functionAppName = "ec-data-share-func-east"
+$resourceGroup = "<your resource group name>"
+$functionAppName = "<your function name>"
 
 
 if(!(Get-AzContext)) {
