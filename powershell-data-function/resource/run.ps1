@@ -6,6 +6,9 @@ param($Request, $TriggerMetadata)
 
 $DebugPreference = 'Continue'
 $ErrorActionPreference = 'Stop'
+# suppress version warnings NEW
+Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
+
 
 $provisioningState = $Request.Body.provisioningState
 
@@ -59,7 +62,7 @@ $mTenantId = $mApplicationResource.Identity.TenantId
 
 # assign roles for the Data Store onto the Storage account 
 Add-RoleToStorage -RoleGuid "ba92f5b4-2d11-453d-a403-e96b0029c9fe" -RoleName "Storage Blob Data Contributor" -StorageAccountId $mStorageAccount.Id -DataShareAccount $mDataShareAccount
-Add-RoleToStorage -RoleGuid "2a2b9908-6ea1-4ae2-8e65-a410df84e7d1" -RoleName "Storage Blob Data Reader" -StorageAccountId $mStorageAccount.Id -DataShareAccount $mDataShareAccount
+# Add-RoleToStorage -RoleGuid "2a2b9908-6ea1-4ae2-8e65-a410df84e7d1" -RoleName "Storage Blob Data Reader" -StorageAccountId $mStorageAccount.Id -DataShareAccount $mDataShareAccount
 
 # Fetching Publisher-side details
 $pResourceGroupName = (Get-Item -Path Env:WEBSITE_RESOURCE_GROUP).Value
@@ -94,9 +97,6 @@ if ($invitation) {
 $invitationName = "$($pDataShare.Name)-Invitation"
 $invitation = New-AzDataShareInvitation -AccountName $pDataShareAccountName -Name $invitationName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name -TargetObjectId $mIdentity -TargetTenantId $mTenantId
 
-
-# suppress version warnings NEW
-Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
 
 # Get the Data Sets before changing contexts
 $shareDataSets = Get-AzDataShareDataSet -AccountName $pDataShareAccountName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name

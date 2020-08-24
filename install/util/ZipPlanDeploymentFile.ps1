@@ -8,12 +8,12 @@
 
 $destinationPath = "../partner-center-config/app.zip"
 
-if(Test-Path "../partner-center-config/app.zip") {
+if(Test-Path $destinationPath) {
   Remove-Item -Path $destinationPath
 }
 
 $compress = @{
-    Path = "../partner-center-zip/*.json", "../partner-center-zip/nestedtemplates/"
+    Path = "../partner-center-zip/*.json"
     CompressionLevel = "Fastest"
     DestinationPath = $destinationPath
   }
