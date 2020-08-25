@@ -99,6 +99,40 @@ function New-FolderRestBody () {
     return $body
 }
 
+function Get-DataShareInvitation () {
+
+    param(
+        [Parameter(Mandatory=$true)]
+        [Microsoft.Azure.PowerShell.Cmdlets.DataShare.Models.PSDataShare] $DataShare,
+
+        [Parameter(Mandatory=$true)]
+        [String] $DataShareAccountName,
+
+        [Parameter(Mandatory=$true)]
+        [String] $Identity,
+        
+        [Parameter(Mandatory=$true)]
+        [String] $ResourceGroupName,
+
+        [Parameter(Mandatory=$true)]
+        [String] $TenantId
+    )
+
+    $invitation = Get-AzDataShareInvitation -AccountName $DataShareAccountName -ResourceGroupName $ResourceGroupName -ShareName $DataShare.Name
+
+    if ($invitation) {
+        foreach ($invite in $invitation) {
+            Remove-AzDataShareInvitation -AccountName $DataShareAccountName -ResourceGroupName $ResourceGroupName -ShareName $DataShare.Name -Name $invite.Name
+        }
+    }
+    $invitationName = "$($DataShare.Name)-Invitation"
+    
+    return New-AzDataShareInvitation -AccountName $DataShareAccountName -Name $invitationName -ResourceGroupName $ResourceGroupName -ShareName $DataShare.Name -TargetObjectId $Identity -TargetTenantId $TenantId
+
+
+}
+
+
 function Add-RoleToStorage() {
 
     param(

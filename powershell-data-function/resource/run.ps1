@@ -6,9 +6,9 @@ param($Request, $TriggerMetadata)
 
 $DebugPreference = 'Continue'
 $ErrorActionPreference = 'Stop'
+
 # suppress version warnings NEW
 Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
-
 
 $provisioningState = $Request.Body.provisioningState
 
@@ -25,7 +25,9 @@ if ($provisioningState -ne "Succeeded") {
 $cAccessToken = Get-ClientAccessToken
 Connect-AzAccount -AccessToken $cAccessToken -AccountId MSI@50342
 
+# ----------------------------------------------------
 # Fetching Consumer side details
+# ----------------------------------------------------
 $cApplicationId = $Request.Body.applicationId
 $planName = $Request.Body.plan.name
 $a = $cApplicationId -split '/'
@@ -33,7 +35,9 @@ $cSubscriptionId = $a[2]
 $cResourceGroupName = $a[4]
 $cManagedAppName = $a[8]
 
+# ----------------------------------------------------
 # get the managed application information
+# ----------------------------------------------------
 $mApplication = $null
 $mApplicationResource = $null
 
@@ -60,9 +64,10 @@ $mStorageAccount = Get-AzStorageAccount -ResourceGroupName $mResourceGroupName
 $mTenantId = $mApplicationResource.Identity.TenantId
 
 
+# ----------------------------------------------------
 # assign roles for the Data Store onto the Storage account 
+# ----------------------------------------------------
 Add-RoleToStorage -RoleGuid "ba92f5b4-2d11-453d-a403-e96b0029c9fe" -RoleName "Storage Blob Data Contributor" -StorageAccountId $mStorageAccount.Id -DataShareAccount $mDataShareAccount
-# Add-RoleToStorage -RoleGuid "2a2b9908-6ea1-4ae2-8e65-a410df84e7d1" -RoleName "Storage Blob Data Reader" -StorageAccountId $mStorageAccount.Id -DataShareAccount $mDataShareAccount
 
 # Fetching Publisher-side details
 $pResourceGroupName = (Get-Item -Path Env:WEBSITE_RESOURCE_GROUP).Value
@@ -86,18 +91,6 @@ if (!$pDataShare) {
     Stop-WithHttp -Message $message -StatusCode 404
 }
 
-# get all current invites, kill them and issue one new one.
-$invitation = Get-AzDataShareInvitation -AccountName $pDataShareAccountName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name
-
-if ($invitation) {
-    foreach ($invite in $invitation) {
-        Remove-AzDataShareInvitation -AccountName $pDataShareAccountName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name -Name $invite.Name
-    }
-}
-$invitationName = "$($pDataShare.Name)-Invitation"
-$invitation = New-AzDataShareInvitation -AccountName $pDataShareAccountName -Name $invitationName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name -TargetObjectId $mIdentity -TargetTenantId $mTenantId
-
-
 # Get the Data Sets before changing contexts
 $shareDataSets = Get-AzDataShareDataSet -AccountName $pDataShareAccountName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name
 
@@ -112,13 +105,18 @@ if ($shareDataSets.Count -eq 0) {
     exit
 }
 
+# get a current invite
+$invitation = Get-DataShareInvitation -DataShare $pDataShare -DataShareAccountName $pDataShareAccountName -Identity $mIdentity -ResourceGroupName $pResourceGroupName -TenantId $mTenantId
+
 # Get the pub side trigger here
 $pTrigger = Get-AzDataShareSynchronizationSetting -ResourceGroupName $pResourceGroupName -AccountName $pDataShareAccountName -ShareName $planName
 
 Set-AzContext -SubscriptionId $cSubscriptionId
 
-# Connect as the Managed Application
-# fetching token for managed identity
+# ----------------------------------------------------
+# Fetch token for managed identity and
+# connect as the Managed Application
+# ----------------------------------------------------
 $listTokenUri = "https://management.azure.com/$cApplicationId/listTokens?api-version=2018-09-01-preview"
 
 $body = @{ "authorizationAudience" = "https://management.azure.com/" } | ConvertTo-Json
@@ -133,7 +131,10 @@ $mAppToken = $response.value.access_token
 
 Connect-AzAccount -AccessToken $mAppToken -AccountId MSI@50342
 
+
+# ----------------------------------------------------
 # Create new Share Subscription
+# ----------------------------------------------------
 $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/?api-version=2019-11-01"
 
 $headers = @{
@@ -168,7 +169,9 @@ Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
     }
 }
 
+# ----------------------------------------------------
 # Mapping Data Sets
+# ----------------------------------------------------
 foreach ($dataSet in $shareDataSets) {
 
     $body = $null
@@ -190,10 +193,29 @@ foreach ($dataSet in $shareDataSets) {
     Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
 }
 
+# ----------------------------------------------------
+# Enable Snapshot schedule
+# ----------------------------------------------------
+if ($pTrigger) {
+    
+    $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/triggers/$($pTrigger.Name)?api-version=2019-11-01"
+    $body = @{
+        "kind"       = "ScheduleBased"
+        "properties" = @{
+            "recurrenceInterval"  = "$($pTrigger.RecurrenceInterval)"
+            "synchronizationMode" = "$($pTrigger.SynchronizationMode)"
+            "synchronizationTime" = "$($pTrigger.SynchronizationTime)"
+        }
+    } | ConvertTo-Json
+
+    Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
+}
+
+
+# ----------------------------------------------------
 # Start Synchronization
-# Check for synchronization operations previously scheduled
-# POST https://management.azure.com/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.DataShare/accounts/{accountName}/shareSubscriptions/{shareSubscriptionName}/listSynchronizations?api-version=2019-11-01
-Write-Host "Checking for previously scheduled synchronization operations" 
+# Check for previously scheduled sync operations
+# ----------------------------------------------------
 $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/listSynchronizations?api-version=2019-11-01"
 
 $synchronizations = Invoke-RestMethod -Method POST -Uri $restUri -Headers $headers
@@ -209,22 +231,9 @@ else {
     Write-Host "Found existing synchronization operatation. Skipping."
 }
 
-if ($pTrigger) {
-    Write-Host "Enable snapshot schedule"
-
-    $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/triggers/$($pTrigger.Name)?api-version=2019-11-01"
-    $body = @{
-        "kind"       = "ScheduleBased"
-        "properties" = @{
-            "recurrenceInterval"  = "$($pTrigger.RecurrenceInterval)"
-            "synchronizationMode" = "$($pTrigger.SynchronizationMode)"
-            "synchronizationTime" = "$($pTrigger.SynchronizationTime)"
-        }
-    } | ConvertTo-Json
-
-    Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
-}
-
+# ----------------------------------------------------
+# Write final to calling client and Exit Successfully
+# ----------------------------------------------------
 $message = "Request succeeded. Data sync in progress."
 
 Write-Host $message
