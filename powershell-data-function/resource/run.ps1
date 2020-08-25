@@ -85,16 +85,21 @@ if (!$pDataShare) {
     Stop-WithHttp -Message $message -StatusCode 404
 }
 
-# get all current invites, kill them and issue one new one.
-$invitation = Get-AzDataShareInvitation -AccountName $pDataShareAccountName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name
+# get current invite
+$invitation = Get-DataShareInvitation   -DataShare $pDataShare `
+                                        -DataShareAccountName $pDataShareAccountName `
+                                        -Identity $mIdentity `
+                                        -ResourceGroupName $pResourceGroupName `
+                                        -TenantId $mTenantId
 
-if ($invitation) {
-    foreach ($invite in $invitation) {
-        Remove-AzDataShareInvitation -AccountName $pDataShareAccountName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name -Name $invite.Name
-    }
-}
-$invitationName = "$($pDataShare.Name)-Invitation"
-$invitation = New-AzDataShareInvitation -AccountName $pDataShareAccountName -Name $invitationName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name -TargetObjectId $mIdentity -TargetTenantId $mTenantId
+# $invitation = Get-AzDataShareInvitation -AccountName $pDataShareAccountName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name
+# if ($invitation) {
+#     foreach ($invite in $invitation) {
+#         Remove-AzDataShareInvitation -AccountName $pDataShareAccountName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name -Name $invite.Name
+#     }
+# }
+# $invitationName = "$($pDataShare.Name)-Invitation"
+# $invitation = New-AzDataShareInvitation -AccountName $pDataShareAccountName -Name $invitationName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name -TargetObjectId $mIdentity -TargetTenantId $mTenantId
 
 
 # Get the Data Sets before changing contexts
