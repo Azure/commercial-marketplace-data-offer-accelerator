@@ -170,7 +170,7 @@ Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
 }
 
 # ----------------------------------------------------
-# Mapping Data Sets
+# Create Data Set Mappings
 # ----------------------------------------------------
 foreach ($dataSet in $shareDataSets) {
 
@@ -188,7 +188,7 @@ foreach ($dataSet in $shareDataSets) {
         }
     }
 
-    $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/dataSetMappings/$($dataSet.DataSetId)?api-version=2019-11-01"
+    $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/dataSetMappings/$($dataSet.Name)?api-version=2019-11-01"
     
     Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
 }

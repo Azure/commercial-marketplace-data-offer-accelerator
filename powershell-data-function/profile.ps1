@@ -24,7 +24,6 @@ function New-BlobRestBody () {
 
     $body = @{
         "kind"       = "Blob"
-        "name"       = $DataSet.DataSetId
         "properties" = @{
             "containerName"      = $DataSet.ContainerName
             "dataSetId"          = $DataSet.DataSetId
