@@ -5,7 +5,6 @@
 
 # vscode config files
 .vscode
-
 # User-specific files
 *.rsuser
 *.suo
@@ -360,4 +359,5 @@ __MACOSX/
 */InvokeFunctionTest.ps1
 **/.DS_Store
 InvokeFunctionTest.ps1
-install/partner-center-config/app.zip
+app.zip
+UpdateFunctionAppTest.ps1

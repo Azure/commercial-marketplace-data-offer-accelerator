@@ -1,6 +1,6 @@
 $destinationPath = "../publisher-azure/functionapp/functionapp.zip"
-$resourceGroup = "<your resource group>"
-$functionAppName = "<your function app>"
+$resourceGroup = "<your resource group name>"
+$functionAppName = "<your function name>"
 
 if(!(Get-AzContext)) {
   Connect-AzAccount
@@ -38,8 +38,9 @@ else {
 if ($updateApp) {
   Write-Host "Updating function app..."
   if ( [environment]::OSVersion.Platform -eq "Unix") {
-    $processInfo = Start-Process -FilePath "pwsh" -Args "-Command Publish-AzWebapp -ResourceGroupName $resourceGroup -Name $functionAppName -ArchivePath (Resolve-Path $destinationPath).Path -Force" -PassThru
+    $processInfo = Start-Process -FilePath "pwsh" -Args "-Command Publish-AzWebapp -ResourceGroupName $resourceGroup -Name $functionAppName -ArchivePath (Resolve-Path $destinationPath).Path -Force" -PassThru 
     $processInfo.WaitForExit()
+
   }
   else {
     $processInfo = Start-Process -FilePath "powershell.exe" -Args "Publish-AzWebapp -ResourceGroupName $resourceGroup -Name $functionAppName -ArchivePath (Resolve-Path $destinationPath).Path -Force" -PassThru

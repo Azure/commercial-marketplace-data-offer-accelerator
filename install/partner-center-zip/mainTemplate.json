@@ -14,12 +14,13 @@
         }
     },
     "variables": {
-        "nestedTemplateUri": "[uri(deployment().properties.templateLink.uri, 'nestedtemplates/storageAccount.json')]"
+        "storageAccountName": "[substring(concat(parameters('storageAccountNamePrefix'), uniqueString(resourceGroup().name)), 0, 15)]",
+        "dataShareAccountName": "[substring(concat('datashare', uniqueString(resourceGroup().name)), 0, 15)]"
     },
     "resources": [
         {
             "apiVersion": "2018-02-01",
-            "name": "pid-YOUR_GUID_HERE",
+            "name": "pid-GUID",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
@@ -31,33 +32,33 @@
             }
         },
         {
-            "type": "Microsoft.Resources/deployments",
-            "apiVersion": "2019-10-01",
-            "name": "nestedDeployment",
+            "type": "Microsoft.Storage/storageAccounts",
+            "name": "[variables('storageAccountName')]",
+            "apiVersion": "2019-06-01",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "[parameters('storageAccountType')]"
+            },
+            "kind": "Storage",
             "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "contentVersion": "1.0.0.0",
-                    "uri": "[variables('nestedTemplateUri')]"
-                },
-                "parameters": {
-                    "storageAccountNamePrefix": {
-                        "value": "[parameters('storageAccountNamePrefix')]"
-                    },
-                    "storageAccountType": {
-                        "value": "[parameters('storageAccountType')]"
-                    },
-                    "location": {
-                        "value": "[parameters('location')]"
-                    }
-                }
+            }
+        },
+        {
+            "type": "Microsoft.DataShare/accounts",
+            "apiVersion": "2019-11-01",
+            "name": "[variables('dataShareAccountName')]",
+            "location": "[parameters('location')]",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {
             }
         }
     ],
     "outputs": {
         "storageEndpoint": {
             "type": "string",
-            "value": "[reference('nestedDeployment').outputs.storageEndpoint.value]"
+            "value": "[reference(resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2016-01-01').primaryEndpoints.blob]"
         }
     }
 }
