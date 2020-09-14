@@ -9,16 +9,16 @@
 function New-BlobRestBody () {
 
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [Microsoft.Azure.PowerShell.Cmdlets.DataShare.Models.PSDataShareDataSet] $DataSet,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [String] $StorageAccountName,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [String] $ResourceGroupname,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [String] $SubscriptionId
     )
 
@@ -40,16 +40,16 @@ function New-BlobRestBody () {
 function New-ContainerRestBody () {
 
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [Microsoft.Azure.PowerShell.Cmdlets.DataShare.Models.PSDataShareDataSet] $DataSet,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [String] $StorageAccountName,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [String] $ResourceGroupname,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [String] $SubscriptionId
     )
 
@@ -70,16 +70,16 @@ function New-ContainerRestBody () {
 function New-FolderRestBody () {
 
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [Microsoft.Azure.PowerShell.Cmdlets.DataShare.Models.PSDataShareDataSet] $DataSet,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [String] $StorageAccountName,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [String] $ResourceGroupname,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [String] $SubscriptionId
     )
 
@@ -101,34 +101,33 @@ function New-FolderRestBody () {
 function Get-DataShareInvitation () {
 
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [Microsoft.Azure.PowerShell.Cmdlets.DataShare.Models.PSDataShare] $DataShare,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [String] $DataShareAccountName,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [String] $Identity,
         
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [String] $ResourceGroupName,
 
-        [Parameter(Mandatory=$true)]
-        [String] $TenantId
+        [Parameter(Mandatory = $true)]
+        [String] $TenantId,
+
+        [Parameter(Mandatory = $true)]
+        [String] $ManagedAppName
     )
 
-    $invitation = Get-AzDataShareInvitation -AccountName $DataShareAccountName -ResourceGroupName $ResourceGroupName -ShareName $DataShare.Name
+    $invitationName = "$($ManagedAppName)-invitation"
+    $invitation = Get-AzDataShareInvitation -AccountName $DataShareAccountName -ResourceGroupName $ResourceGroupName -ShareName $DataShare.Name -Name $invitationName -ErrorAction SilentlyContinue
 
     if ($invitation) {
-        foreach ($invite in $invitation) {
-            Remove-AzDataShareInvitation -AccountName $DataShareAccountName -ResourceGroupName $ResourceGroupName -ShareName $DataShare.Name -Name $invite.Name
-        }
+        Remove-AzDataShareInvitation -AccountName $DataShareAccountName -ResourceGroupName $ResourceGroupName -ShareName $DataShare.Name -Name $invitationName
     }
-    $invitationName = "$($DataShare.Name)-Invitation"
     
     return New-AzDataShareInvitation -AccountName $DataShareAccountName -Name $invitationName -ResourceGroupName $ResourceGroupName -ShareName $DataShare.Name -TargetObjectId $Identity -TargetTenantId $TenantId
-
-
 }
 
 
@@ -136,16 +135,16 @@ function Add-RoleToStorage() {
 
     param(
         
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [Microsoft.Azure.PowerShell.Cmdlets.DataShare.Models.PSDataShareAccount] $DataShareAccount,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [String] $StorageAccountId,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [String] $RoleGuid,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [String] $RoleName
 
     )
@@ -236,11 +235,11 @@ function Stop-WithHttp() {
 
     param (
         # Default is "Request Succeeded"
-        [Parameter(Mandatory=$false)]
+        [Parameter(Mandatory = $false)]
         [String] $Message,
 
         #  Default is OK/200
-        [Parameter(Mandatory=$false)]
+        [Parameter(Mandatory = $false)]
         [HttpStatusCode] $StatusCode
     )
 
@@ -249,7 +248,7 @@ function Stop-WithHttp() {
         $StatusCode = [HttpStatusCode]::OK
     }
 
-    if(!$StatusCode) {
+    if (!$StatusCode) {
         $StatusCode = [HttpStatusCode]::OK
     }
 
@@ -268,10 +267,10 @@ function Stop-WithHttp() {
 
 function Write-ItemAsJson {
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [String] $HeaderMessage,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [System.Object] $Item
     )
     
@@ -283,13 +282,14 @@ function Write-ItemAsJson {
 
 }
 
-function Write-ItemsAsJSON {`
+function Write-ItemsAsJSON {
+`
     
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [String] $HeaderMessage,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory = $true)]
         [System.Collections.Hashtable] $Items
     )
     
