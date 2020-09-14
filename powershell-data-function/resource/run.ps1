@@ -3,7 +3,6 @@ using namespace System.Net
 # Input bindings are passed in via param block.
 param($Request, $TriggerMetadata)
 
-
 $DebugPreference = 'Continue'
 $ErrorActionPreference = 'Stop'
 
@@ -59,9 +58,19 @@ Catch [Microsoft.WindowsAzure.Commands.Storage.Common.ResourceNotFoundException]
 $mResourceGroupId = $mApplication.Properties.managedResourceGroupId
 $mResourceGroupName = ($mResourceGroupId -split '/')[4]
 $mIdentity = $mApplicationResource.Identity.PrincipalId
+Write-Host mIdentity: $mIdentity
+$mTenantId = $mApplicationResource.Identity.TenantId
+Write-Host mTenantId: $mTenantId
 $mDataShareAccount = Get-AzDataShareAccount -ResourceGroupName $mResourceGroupName
 $mStorageAccount = Get-AzStorageAccount -ResourceGroupName $mResourceGroupName
-$mTenantId = $mApplicationResource.Identity.TenantId
+
+if (!$mDataShareAccount -or !$mStorageAccount) {
+    $message = "ERROR: Cannot fetch information on publisher Data Share account or storage account."
+    
+    Write-Host $message
+    
+    Stop-WithHttp -Message $message -StatusCode 412
+}
 
 
 # ----------------------------------------------------
@@ -77,7 +86,9 @@ $pSubscriptionId = ($websiteOwnerName -split "\+")[0]
 # connecting to publisher side
 Set-AzContext -SubscriptionId $pSubscriptionId
 
-$pDataShareAccountName = (Get-AzDataShareAccount -ResourceGroupName $pResourceGroupName).Name
+$pDataShareAccount = Get-AzDataShareAccount -ResourceGroupName $pResourceGroupName
+$pDataShareAccountName = $pDataShareAccount.Name
+$shareSourceLocation = $pDataShareAccount.Location
 
 # Get the appropriate publisher Data Share
 $pDataShare = Get-AzDataShare -Name $planName -ResourceGroupName $pResourceGroupName -AccountName $pDataShareAccountName -ErrorVariable errorInfo
@@ -106,7 +117,7 @@ if ($shareDataSets.Count -eq 0) {
 }
 
 # get a current invite
-$invitation = Get-DataShareInvitation -DataShare $pDataShare -DataShareAccountName $pDataShareAccountName -Identity $mIdentity -ResourceGroupName $pResourceGroupName -TenantId $mTenantId
+$invitation = Get-DataShareInvitation -DataShare $pDataShare -DataShareAccountName $pDataShareAccountName -Identity $mIdentity -ResourceGroupName $pResourceGroupName -TenantId $mTenantId -ManagedAppName $cManagedAppName
 
 # Get the pub side trigger here
 $pTrigger = Get-AzDataShareSynchronizationSetting -ResourceGroupName $pResourceGroupName -AccountName $pDataShareAccountName -ShareName $planName
@@ -123,19 +134,18 @@ $body = @{ "authorizationAudience" = "https://management.azure.com/" } | Convert
 
 $headers = @{
     "Authorization" = "Bearer $cAccessToken"
-    "client_id"     = $mIdentity 
+    "client_id"     = $mIdentity
 }
 
 $response = Invoke-RestMethod -Uri $listTokenUri -ContentType "application/json" -Method POST -Body $body -Headers $headers
 $mAppToken = $response.value.access_token
 
-Connect-AzAccount -AccessToken $mAppToken -AccountId MSI@50342
-
+Connect-AzAccount -AccessToken $mAppToken -AccountId $mIdentity
 
 # ----------------------------------------------------
 # Create new Share Subscription
 # ----------------------------------------------------
-$restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/?api-version=2019-11-01"
+$restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$($planName)?api-version=2019-11-01"
 
 $headers = @{
     'Authorization' = 'Bearer ' + $mAppToken
@@ -145,10 +155,9 @@ $headers = @{
 $body = @{
     "properties" = @{
         "invitationId"        = $invitation.InvitationId
-        "sourceShareLocation" = $mStorageAccount.Location
+        "sourceShareLocation" = $shareSourceLocation
     }
 } | ConvertTo-Json
-
 
 Try {
     Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body

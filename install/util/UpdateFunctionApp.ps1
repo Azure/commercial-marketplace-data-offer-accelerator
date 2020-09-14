@@ -2,7 +2,6 @@ $destinationPath = "../publisher-azure/functionapp/functionapp.zip"
 $resourceGroup = "<your resource group name>"
 $functionAppName = "<your function name>"
 
-
 if(!(Get-AzContext)) {
   Connect-AzAccount
 }
