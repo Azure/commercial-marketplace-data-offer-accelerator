@@ -1,5 +1,5 @@
 param ($ResourceGroupName, $FunctionAppName)
-if (!$ResourceGroupName -and !$FunctionAppName)
+if (!$ResourceGroupName -or !$FunctionAppName)
 {
   Write-Host "Please provide resource group name and the function app name parameters to proceed."
   exit
