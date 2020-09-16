@@ -120,6 +120,7 @@ function Get-DataShareInvitation () {
         [String] $ManagedAppName
     )
 
+<<<<<<< HEAD
     $invitationName = "invite-$($Identity)"
     $invitation = $null
     $invitation = Get-AzDataShareInvitation -AccountName $DataShareAccountName -ResourceGroupName $ResourceGroupName -ShareName $DataShare.Name -Name $invitationName -ErrorAction SilentlyContinue
@@ -129,6 +130,16 @@ function Get-DataShareInvitation () {
     }
     
     return $invitation
+=======
+    $invitationName = "$($ManagedAppName)-invitation"
+    $invitation = Get-AzDataShareInvitation -AccountName $DataShareAccountName -ResourceGroupName $ResourceGroupName -ShareName $DataShare.Name -Name $invitationName -ErrorAction SilentlyContinue
+
+    if ($invitation) {
+        Remove-AzDataShareInvitation -AccountName $DataShareAccountName -ResourceGroupName $ResourceGroupName -ShareName $DataShare.Name -Name $invitationName
+    }
+    
+    return New-AzDataShareInvitation -AccountName $DataShareAccountName -Name $invitationName -ResourceGroupName $ResourceGroupName -ShareName $DataShare.Name -TargetObjectId $Identity -TargetTenantId $TenantId
+>>>>>>> e6467e43e792955cef76a4c585065b572a6cd2d3
 }
 
 
