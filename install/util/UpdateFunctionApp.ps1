@@ -1,6 +1,11 @@
+param ($ResourceGroupName, $FunctionAppName)
+if (!$ResourceGroupName -and !$FunctionAppName)
+{
+  Write-Host "Please provide resource group name and the function app name parameters to proceed."
+  exit
+}
+
 $destinationPath = "../publisher-azure/functionapp/functionapp.zip"
-$resourceGroup = "<your resource group name>"
-$functionAppName = "<your function name>"
 
 if(!(Get-AzContext)) {
   Connect-AzAccount
