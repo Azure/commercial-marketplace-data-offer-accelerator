@@ -120,6 +120,8 @@ function Get-DataShareInvitation () {
         [String] $ManagedAppName
     )
 
+    $DebugPreference = 'SilentlyContinue'
+
     $invitationName = "invite-$($Identity)"
     $invitation = $null
     $invitation = Get-AzDataShareInvitation -AccountName $DataShareAccountName -ResourceGroupName $ResourceGroupName -ShareName $DataShare.Name -Name $invitationName -ErrorAction SilentlyContinue
