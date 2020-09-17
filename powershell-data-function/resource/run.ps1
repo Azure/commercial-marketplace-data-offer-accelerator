@@ -65,11 +65,11 @@ $mDataShareAccount = Get-AzDataShareAccount -ResourceGroupName $mResourceGroupNa
 $mStorageAccount = Get-AzStorageAccount -ResourceGroupName $mResourceGroupName
 
 if (!$mDataShareAccount -or !$mStorageAccount) {
-    $message = "ERROR: Cannot fetch information on publisher Data Share account or storage account."
+    $message = "ERROR: Cannot fetch information on publisher Data Share account or storage account. Sending 404 for a retry later."
     
     Write-Host $message
     
-    Stop-WithHttp -Message $message -StatusCode 412
+    Stop-WithHttp -Message $message -StatusCode 404
 }
 
 
