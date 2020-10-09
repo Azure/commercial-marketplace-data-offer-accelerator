@@ -20,7 +20,7 @@
     "resources": [
         {
             "apiVersion": "2018-02-01",
-            "name": "pid-GUID",
+            "name": "pid-YOUR_GUID_HERE",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
