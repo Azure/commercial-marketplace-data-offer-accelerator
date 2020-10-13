@@ -18,12 +18,10 @@ Below are instructions, videos, and helpful resources to publish Data Offers on 
 1. [Creating a Plan for your Azure Marketplace Offer in Partner Center](docs/CreatePlan.md)
 1. [Purchasing a Data Offer as a consumer](docs/PurchaseDataOffer.md)
 
----
-
-### Other actions for your Data Offer
+### Other actions
 
 - [Setting Up Your Raw Data](docs/RawData.md)
-- [Update Function Code](docs/UpdateFunction.md)
+- [Updating the Azure Function Code](docs/UpdateFunction.md)
 
 
 ## Other Marketplace Resources
