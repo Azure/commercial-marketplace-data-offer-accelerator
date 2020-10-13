@@ -4,7 +4,7 @@ The Azure Function you deployed into your publisher tenant may receive updates f
 
 **You will be notified by your Azure Marketplace team if you need to update your Azure Function.**.
 
-There are 2 options for updating your funciton code, one using PowerShell and another using the Azure CLI. Both techniques will work on Mac, Linux, or Windows so long as you have the correct dependencies installed.
+There are 2 options for updating your function code, one using PowerShell and another using the Azure CLI. Both techniques will work on Mac, Linux, or Windows so long as you have the correct dependencies installed.
 
 ## Notes
 

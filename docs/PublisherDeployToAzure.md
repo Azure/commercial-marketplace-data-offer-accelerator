@@ -29,7 +29,7 @@ The following resources will be deployed to Azure when installing the data publi
 
 ## Option 1 - Deploy using Azure portal and GitHub
 
-> **Note:** This is the preferred option for deplying the publisher resources to Azure and will be simplest for those not familiar with working with Azure through wither PowerShell or through the az CLI.
+> **Note:** This is the preferred option for deploying the publisher resources to Azure and will be simplest for those not familiar with working with Azure through wither PowerShell or through the az CLI.
 
 Deploy Data Publisher resources directly your Azure tenant. Sign in using the Azure subscription to be used to host the Data Share resources.
 
