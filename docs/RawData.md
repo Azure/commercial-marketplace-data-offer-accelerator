@@ -11,4 +11,4 @@ The below steps assume basic familiarity with Azure and creating Azure services.
 1. Create an Azure Storage account within your raw data resource group.
 1. Upload data into your new Azure Storage account.
 
-**Note:** Although this is the recommended approach to organizing your raw data, there are many ways to configure your raw data for storage within one or more Storage accounts. This is why we recommend you consult with your Data Offer onboarding team during this phase, especially for your first Data Marketplace Offer.
+> **Note:** Although this is the recommended approach to organizing your raw data, there are many ways to configure your raw data for storage within one or more Storage accounts. This is why we recommend you consult with your Data Offer onboarding team during this phase, especially for your first Data Marketplace Offer.
