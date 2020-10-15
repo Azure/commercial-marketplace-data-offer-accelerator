@@ -31,7 +31,7 @@ The following resources will be deployed to Azure when installing the data publi
 
 > **Note:** This is the preferred option for deploying the publisher resources to Azure and will be simplest for those not familiar with working with Azure through wither PowerShell or through the az CLI.
 
-Deploy Data Publisher resources directly your Azure tenant. Sign in using the Azure subscription to be used to host the Data Share resources.
+Deploy Data Publisher resources directly your Azure tenant. When prompted, sign into Azure using the subscription to be used to host the Data Share resources.
 
 [![Deploy to Azure](https://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fcommercial-marketplace-data-offers%2Fmain%2Finstall%2Fpublisher-azure%2Fazuredeploy.json)
 
