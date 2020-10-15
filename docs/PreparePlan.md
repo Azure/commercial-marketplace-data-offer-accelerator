@@ -4,5 +4,15 @@
 
 Pause at any time to work along with the video.
 
+## Online GUID Generators
+
+To create the GUID used in the `pid-YOUR_GUID_HERE` portion of the instructions for `mainTemplate.json` here are some online GUID generators to choose from.
+
+1. [guidgen.com](https://www.guidgen.com/)
+1. [guidgenerator.com](https://www.guidgenerator.com/)
+
+
+
+
 
 
