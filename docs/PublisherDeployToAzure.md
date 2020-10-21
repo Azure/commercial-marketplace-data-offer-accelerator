@@ -4,6 +4,22 @@
 
 There are 4 ways to deploy the data publisher resources from this repository to your Azure subscription. You only need to choose one of these options.
 
+## Your Subscription
+
+No matter which option you choose to install the publisher assets, the subscription used to do the install should be an admin subscription. To ensure that it is, follow the steps below.
+
+1. Search for and find "Subscriptions" in the Azure Portal.
+
+> ![Subscriptions](./images/sub-1.png)
+
+2. Ensure the subscription to install the publisher tools is labeled as "Account Admin" nder the "My Role" column.
+
+> ![Subscriptions](./images/sub-2.png)
+
+
+## Options for installation
+
+
 1. [Use the "Deploy to Azure" button to deploy using the Azure portal](#option-1---deploy-using-azure-portal-and-github). 
 **Note** this is the preferred way to deploy the required publisher resources to Azure. 
 
