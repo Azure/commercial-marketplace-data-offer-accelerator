@@ -1,5 +1,7 @@
 # Data Publisher - Deploy Resources to Azure
 
+> **Note** the subscription used to do this installations must be an Administrator subscription.
+
 ## Deploy to your Azure subscription
 
 There are 4 ways to deploy the data publisher resources from this repository to your Azure subscription. You only need to choose one of these options.
