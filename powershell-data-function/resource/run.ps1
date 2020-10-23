@@ -35,6 +35,11 @@ $cResourceGroupName = $a[4]
 $cManagedAppName = $a[8]
 
 # ----------------------------------------------------
+# set context to customer subscription
+# ----------------------------------------------------
+Set-AzContext -SubscriptionId $cSubscriptionId
+
+# ----------------------------------------------------
 # get the managed application information
 # ----------------------------------------------------
 $mApplication = $null
