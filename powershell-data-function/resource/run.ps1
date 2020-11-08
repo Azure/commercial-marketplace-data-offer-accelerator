@@ -171,7 +171,7 @@ Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
     
     if ($_.Exception.Response.StatusCode -eq 409) {
         
-        $message = "WARNING: Data Share Subscription '$planName' already assigned. Existing with HTTP 200 to stop retries."
+        $message = "WARNING: Data Share Subscription '$planName' already assigned. Exiting with HTTP 200 to stop retries."
         
         Write-Host $message
         
