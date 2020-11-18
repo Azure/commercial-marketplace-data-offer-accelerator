@@ -35,6 +35,11 @@ $cResourceGroupName = $a[4]
 $cManagedAppName = $a[8]
 
 # ----------------------------------------------------
+# set context to customer subscription
+# ----------------------------------------------------
+Set-AzContext -SubscriptionId $cSubscriptionId
+
+# ----------------------------------------------------
 # get the managed application information
 # ----------------------------------------------------
 $mApplication = $null
@@ -65,11 +70,11 @@ $mDataShareAccount = Get-AzDataShareAccount -ResourceGroupName $mResourceGroupNa
 $mStorageAccount = Get-AzStorageAccount -ResourceGroupName $mResourceGroupName
 
 if (!$mDataShareAccount -or !$mStorageAccount) {
-    $message = "ERROR: Cannot fetch information on publisher Data Share account or storage account. Sending 404 for a retry later."
+    $message = "ERROR: Cannot fetch information on publisher Data Share account or storage account. Sending 503 for a retry later."
     
     Write-Host $message
     
-    Stop-WithHttp -Message $message -StatusCode 404
+    Stop-WithHttp -Message $message -StatusCode 503
 }
 
 
@@ -99,7 +104,7 @@ if (!$pDataShare) {
     
     Write-Host $message
     
-    Stop-WithHttp -Message $message -StatusCode 404
+    Stop-WithHttp -Message $message -StatusCode 503
 }
 
 # Get the Data Sets before changing contexts
@@ -111,7 +116,7 @@ if ($shareDataSets.Count -eq 0) {
 
     Write-Host $message
 
-    Stop-WithHttp -Message $message -StatusCode 404
+    Stop-WithHttp -Message $message -StatusCode 503
 
     exit
 }
@@ -166,7 +171,7 @@ Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
     
     if ($_.Exception.Response.StatusCode -eq 409) {
         
-        $message = "WARNING: Data Share Subscription '$planName' already assigned. Existing with HTTP 200 to stop retries."
+        $message = "WARNING: Data Share Subscription '$planName' already assigned. Exiting with HTTP 200 to stop retries."
         
         Write-Host $message
         
