@@ -69,8 +69,16 @@ Write-Host mTenantId: $mTenantId
 $mDataShareAccount = Get-AzDataShareAccount -ResourceGroupName $mResourceGroupName
 $mStorageAccount = Get-AzStorageAccount -ResourceGroupName $mResourceGroupName
 
-if (!$mDataShareAccount -or !$mStorageAccount) {
-    $message = "ERROR: Cannot fetch information on publisher Data Share account or storage account. Sending 503 for a retry later."
+if (!$mStorageAccount) {
+    $message = "ERROR: Cannot fetch information on consumer storage account. Sending 503 for a retry later."
+    
+    Write-Host $message
+    
+    Stop-WithHttp -Message $message -StatusCode 503
+}
+
+if (!$mDataShareAccount) {
+    $message = "ERROR: Cannot fetch information on consumer Data Share account. Sending 503 for a retry later."
     
     Write-Host $message
     
