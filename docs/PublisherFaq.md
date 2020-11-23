@@ -20,5 +20,3 @@ And I am adding DataSets to my DataShare
 Then each new DataSet should map to a Blob Container in my raw data Storage Account  
 And then I can add new data to the container in the future  
 And the customer will receive the new data (as long as my DataShare is set to sync periodically)
-
-## 2. How should I name my DataShares?
