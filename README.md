@@ -20,7 +20,7 @@ Below are instructions, videos, and helpful resources to publish Data Offers on 
 
 ### Other actions
 
-- [Publisher FAQ](docs/PublisherFAQ.md)
+- [Publisher FAQ](./docs/PublisherFaq.md)
 - [Setting Up Your Raw Data](docs/RawData.md)
 - [Updating the Azure Function Code](docs/UpdateFunction.md)
 
