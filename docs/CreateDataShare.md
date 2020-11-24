@@ -6,6 +6,6 @@ To create Azure Marketplace Offers in the Partner Center portal, it is important
 
 Pause at any time to work along with the video.
 
-- **Note:** See [Publisher FAQ](PublisherFAQ.md) question: "Can I add new DataSets to an existing DataShare?"
+- **Note:** See [Publisher FAQ](PublisherFaq.md) question: "Can I add new DataSets to an existing DataShare?"
 
 
