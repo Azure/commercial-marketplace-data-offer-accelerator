@@ -8,4 +8,3 @@ Pause at any time to work along with the video.
 
 - **Note:** See [Publisher FAQ](PublisherFaq.md) question: "Can I add new DataSets to an existing DataShare?"
 
-
