@@ -46,6 +46,7 @@
                 {
                     "count": 1,
                     "name": "storageAccounts",
+                    "toolTip": "Storage account prefix",
                     "type": "Microsoft.Storage.MultiStorageAccountCombo",
                     "visible": true,
                     "label": {
@@ -74,6 +75,7 @@
                 },
                 {
                     "name": "appIdentity",
+                    "toolTip": "App Identity",
                     "type": "Microsoft.ManagedIdentity.IdentitySelector",
                     "label": "Managed Identity Configuration",
                     "defaultValue": {
@@ -91,8 +93,9 @@
         "outputs": {
             "storageAccountNamePrefix": "[steps('storageConfig').storageAccounts.prefix]",
             "storageAccountType": "[steps('storageConfig').storageAccounts.type]",
-            "location": "[location()]",
-            "managedIdentity": "[steps('storageConfig').appIdentity]"
+            "location": "[location()]"
+            // "managedIdentity": "[steps('storageConfig').appIdentity]"
+            
         }
     }
 }
