@@ -94,8 +94,6 @@
             "storageAccountNamePrefix": "[steps('storageConfig').storageAccounts.prefix]",
             "storageAccountType": "[steps('storageConfig').storageAccounts.type]",
             "location": "[location()]"
-            // "managedIdentity": "[steps('storageConfig').appIdentity]"
-            
         }
     }
 }
