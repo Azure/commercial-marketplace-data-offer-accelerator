@@ -4,7 +4,6 @@
 
 This PoC enables selling and purchasing of raw data within the Azure Marketplace.
 
-> Before beginning the onboarding process, please ensure your company has signed the Data Marketplace Addendum to the Azure Marketplace Publisher Agreement. This will be provided by your business contact at Microsoft.
 
 ## Installation Instructions and Examples
 
