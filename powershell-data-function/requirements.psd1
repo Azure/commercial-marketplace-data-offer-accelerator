@@ -2,8 +2,10 @@
 # See https://aka.ms/functionsmanageddependency for additional information.
 #
 @{
-    'Az' = '3.*'
-    'Az.DataShare' = '0.*'
-    'Az.ManagedServiceIdentity' = '0.*'
-    'Az.Accounts' = '1.9.0'
+    'Az' = '6.5.0'
+    'Az.DataShare' = '1.0.0'
+    'Az.ManagedServiceIdentity' = '0.7.3'
+    'Az.Accounts' = '2.6.0'
+    'Az.Resources' = '4.4.0'
+    'Az.Storage' = '3.12.0'
 }

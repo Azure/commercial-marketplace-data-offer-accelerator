@@ -1,14 +1,14 @@
-param ($ResourceGroupName, $FunctionAppName)
-if (!$ResourceGroupName -or !$FunctionAppName)
+param ($ResourceGroupName, $FunctionAppName, $TenantId, $SubscriptionId)
+if (!$ResourceGroupName -or !$FunctionAppName -or !$TenantId -or !$SubscriptionId)
 {
-  Write-Host "Please provide resource group name and the function app name parameters to proceed."
+  Write-Host "Please provide resource group name, function app name, TenantId, and SubscriptioId parameters to proceed."
   exit
 }
 
 $destinationPath = "../publisher-azure/functionapp/functionapp.zip"
 
 if(!(Get-AzContext)) {
-  Connect-AzAccount
+  Connect-AzAccount -Tenant $TenantId  -Subscription $SubscriptionId
 }
 
 if (Test-Path "$destinationPath") {
@@ -23,16 +23,17 @@ $compress = @{
 Compress-Archive @compress
 
 $updateApp = $false;
+
 if (!(Get-Module -ListAvailable Az.Websites) -and !([environment]::OSVersion.Platform -eq "Unix")) {
   Write-Host "Powershell module Az.Websites is required to update the function app. Please approve the UAC prompt in the next step."
   Read-Host -Prompt "Press enter to continue"
-  $processInfo = Start-Process -FilePath "powershell.exe" -Args "Install-Module Az.Websites -MinimumVersion 1.11.0" -Verb runas -PassThru
+  $processInfo = Start-Process -FilePath "powershell.exe" -Args "Install-Module Az.Websites -MinimumVersion 2.8.3" -Verb runas -PassThru
   $processInfo.WaitForExit()
   $updateApp = $true
 }
 elseif (!(Get-Module -ListAvailable Az.Websites) -and ([environment]::OSVersion.Platform -eq "Unix")) {
   Write-Host "Powershell module Az.Websites is required to update the function app."
-  $processInfo = Start-Process -FilePath "pwsh" -Args "-Command Install-Module Az.Websites -MinimumVersion 1.11.0" -PassThru
+  $processInfo = Start-Process -FilePath "pwsh" -Args "-Command Install-Module Az.Websites -MinimumVersion 2.8.3" -PassThru
   $processInfo.WaitForExit()
   $updateApp = $true
 }

@@ -1,1 +1,1 @@
-Microsoft.Storage/storageAccounts/listKeys/*;Microsoft.Storage/storageAccounts/blobServices/*;Microsoft.DataShare/*/read;Microsoft.DataShare/accounts/shareSubscriptions/*
+Microsoft.Solutions/applications/*;Microsoft.Storage/storageAccounts/listKeys/*;Microsoft.Storage/storageAccounts/blobServices/*;Microsoft.DataShare/*/read;Microsoft.DataShare/accounts/shareSubscriptions/*

@@ -5,6 +5,7 @@ param($Request, $TriggerMetadata)
 
 $DebugPreference = 'Continue'
 $ErrorActionPreference = 'Stop'
+$writeInfoOutput = [bool]::Parse('True')
 
 # suppress version warnings NEW
 Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
@@ -13,20 +14,22 @@ $provisioningState = $Request.Body.provisioningState
 
 # ensure this a Reqeust we want to handle
 if ($provisioningState -ne "Succeeded") {
-    
-    $message = "Exiting without any processing of Azure resources. Request has '$provisioningState' instead of 'Succeeded' provisioning state."
-    
+    $message = "Request has '$provisioningState' instead of 'Succeeded' provisioning state. Exiting without any processing of Azure resources."
     Write-Host $message
-    
     Stop-WithHttp  -Message $message
+}
+
+if ($writeInfoOutput) {
+    Write-Host "----------------------------------------------------"
+    Write-Host "REQUEST BODY"
+    Write-Host ($Request.Body | ConvertTo-JSON)
+    Write-Host "----------------------------------------------------"
 }
 
 $cAccessToken = Get-ClientAccessToken
 Connect-AzAccount -AccessToken $cAccessToken -AccountId MSI@50342
 
-# ----------------------------------------------------
 # Fetching Consumer side details
-# ----------------------------------------------------
 $cApplicationId = $Request.Body.applicationId
 $planName = $Request.Body.plan.name
 $a = $cApplicationId -split '/'
@@ -39,56 +42,56 @@ $cManagedAppName = $a[8]
 # ----------------------------------------------------
 Set-AzContext -SubscriptionId $cSubscriptionId
 
-# ----------------------------------------------------
 # get the managed application information
-# ----------------------------------------------------
 $mApplication = $null
 $mApplicationResource = $null
 
 Try {
     # Sometimes this call fails because the managed application has not completed provisioninng 
-    # by the time this function gets called
+    # by the time this function gets called. Flag for retry if it fails.
     $mApplication = Get-AzManagedApplication -ResourceGroupName $cResourceGroupName -Name $cManagedAppName
     $mApplicationResource = Get-AzResource -ResourceId $cApplicationId
 }
 Catch [Microsoft.WindowsAzure.Commands.Storage.Common.ResourceNotFoundException] {
-    
     $message = "ERROR: Get-AzManagedApplication -ResourceGroupName $cResourceGroupName -Name $cManagedAppName Retry."
-    
     Write-Host $message
-    
     Stop-WithHttp -Message $message -StatusCode 425
 }
 
+if (!$mApplicationResource) {
+    $message = "ERROR: mApplicationResource is null. Sending 503 for a retry later."
+    Write-Host $message
+    Stop-WithHttp -Message $message -StatusCode 503
+}
+
+if (!$mApplicationResource.Identity) {
+    $message = "ERROR: mApplicationResource.Identity is null. Sending 503 for a retry later."
+    Write-Host $message
+    Stop-WithHttp -Message $message -StatusCode 503
+}
+
+$mIdentity = $mApplicationResource.Identity.PrincipalId
+$mTenantId = $mApplicationResource.Identity.TenantId
+
 $mResourceGroupId = $mApplication.Properties.managedResourceGroupId
 $mResourceGroupName = ($mResourceGroupId -split '/')[4]
-$mIdentity = $mApplicationResource.Identity.PrincipalId
-Write-Host mIdentity: $mIdentity
-$mTenantId = $mApplicationResource.Identity.TenantId
-Write-Host mTenantId: $mTenantId
+
 $mDataShareAccount = Get-AzDataShareAccount -ResourceGroupName $mResourceGroupName
 $mStorageAccount = Get-AzStorageAccount -ResourceGroupName $mResourceGroupName
 
 if (!$mStorageAccount) {
     $message = "ERROR: Cannot fetch information on consumer storage account. Sending 503 for a retry later."
-    
     Write-Host $message
-    
     Stop-WithHttp -Message $message -StatusCode 503
 }
 
 if (!$mDataShareAccount) {
     $message = "ERROR: Cannot fetch information on consumer Data Share account. Sending 503 for a retry later."
-    
     Write-Host $message
-    
     Stop-WithHttp -Message $message -StatusCode 503
 }
 
-
-# ----------------------------------------------------
-# assign roles for the Data Store onto the Storage account 
-# ----------------------------------------------------
+# Assign roles for the Data Store onto the Storage account 
 Add-RoleToStorage -RoleGuid "ba92f5b4-2d11-453d-a403-e96b0029c9fe" -RoleName "Storage Blob Data Contributor" -StorageAccountId $mStorageAccount.Id -DataShareAccount $mDataShareAccount
 
 # Fetching Publisher-side details
@@ -96,95 +99,66 @@ $pResourceGroupName = (Get-Item -Path Env:WEBSITE_RESOURCE_GROUP).Value
 $websiteOwnerName = (Get-Item -Path Env:WEBSITE_OWNER_NAME).Value
 $pSubscriptionId = ($websiteOwnerName -split "\+")[0]
 
-# connecting to publisher side
+# ----------------------------------------------------
+# Connect via publisher context
+# ----------------------------------------------------
 Set-AzContext -SubscriptionId $pSubscriptionId
 
 $pDataShareAccount = Get-AzDataShareAccount -ResourceGroupName $pResourceGroupName
-$pDataShareAccountName = $pDataShareAccount.Name
-$shareSourceLocation = $pDataShareAccount.Location
 
 # Get the appropriate publisher Data Share
-$pDataShare = Get-AzDataShare -Name $planName -ResourceGroupName $pResourceGroupName -AccountName $pDataShareAccountName -ErrorVariable errorInfo
+$pDataShare = Get-AzDataShare -Name $planName -ResourceGroupName $pResourceGroupName -AccountName $pDataShareAccount.Name -ErrorVariable errorInfo
 
 if (!$pDataShare) {
-    
-    $message = "No Data Share Account '$pDataShareAccountName' found\n\n$errorInfo"
-    
+    $message = "No Data Share '$pDataShare' found\n\n$errorInfo"
     Write-Host $message
-    
     Stop-WithHttp -Message $message -StatusCode 503
 }
 
-# Get the Data Sets before changing contexts
-$shareDataSets = Get-AzDataShareDataSet -AccountName $pDataShareAccountName -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name
-
-if ($shareDataSets.Count -eq 0) {
-
-    $message = "No Data Sets in publisher Data Share: $pDataShareAccountName : $($pDataShare.Name)"
-
+if (!$pDataShare.Name) {
+    $message = "No Data Share Name '$($pDataShare.Name)' found\n\n$errorInfo"
     Write-Host $message
-
     Stop-WithHttp -Message $message -StatusCode 503
-
-    exit
 }
 
-# get a current invite
-$invitation = Get-DataShareInvitation -DataShare $pDataShare -DataShareAccountName $pDataShareAccountName -Identity $mIdentity -ResourceGroupName $pResourceGroupName -TenantId $mTenantId -ManagedAppName $cManagedAppName
+# Get the Data Sets to synchronize
+$pDataSets = Get-AzDataShareDataSet -AccountName $pDataShareAccount.Name -ResourceGroupName $pResourceGroupName -ShareName $pDataShare.Name
 
-# Get the pub side trigger here
-$pTrigger = Get-AzDataShareSynchronizationSetting -ResourceGroupName $pResourceGroupName -AccountName $pDataShareAccountName -ShareName $planName
+if ($pDataSets.Count -eq 0) {
+    $message = "No Data Sets in publisher Data Share: $pDataShareAccount.Name : $($pDataShare.Name)"
+    Write-Host $message
+    Stop-WithHttp -Message $message -StatusCode 400
+}
 
+# get a current invitation
+$invitation = Get-DataShareInvitation -DataShare $pDataShare -DataShareAccountName $pDataShareAccount.Name -Identity $mIdentity -ResourceGroupName $pResourceGroupName -TenantId $mTenantId -ManagedAppName $cManagedAppName
+
+# Get the publisher side trigger
+$pTrigger = Get-AzDataShareSynchronizationSetting -ResourceGroupName $pResourceGroupName -AccountName $pDataShareAccount.Name -ShareName $planName
+
+# ----------------------------------------------------
+# Connect via consumer context
+# ----------------------------------------------------
 Set-AzContext -SubscriptionId $cSubscriptionId
 
-# ----------------------------------------------------
-# Fetch token for managed identity and
-# connect as the Managed Application
-# ----------------------------------------------------
-$listTokenUri = "https://management.azure.com/$cApplicationId/listTokens?api-version=2018-09-01-preview"
-
-$body = @{ "authorizationAudience" = "https://management.azure.com/" } | ConvertTo-Json
-
+# Fetch token for managed identity and connect as the Managed Application
 $headers = @{
     "Authorization" = "Bearer $cAccessToken"
     "client_id"     = $mIdentity
+    "Content-Type"  = "application/json"
 }
-
-$response = Invoke-RestMethod -Uri $listTokenUri -ContentType "application/json" -Method POST -Body $body -Headers $headers
-$mAppToken = $response.value.access_token
-
-Connect-AzAccount -AccessToken $mAppToken -AccountId $mIdentity
-
-# ----------------------------------------------------
-# Create new Share Subscription
-# ----------------------------------------------------
-$restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$($planName)?api-version=2019-11-01"
-
-$headers = @{
-    'Authorization' = 'Bearer ' + $mAppToken
-    'Content-Type'  = 'application/json'
-}
-
-$body = @{
-    "properties" = @{
-        "invitationId"        = $invitation.InvitationId
-        "sourceShareLocation" = $shareSourceLocation
-    }
-} | ConvertTo-Json
+$body = @{ "authorizationAudience" = "https://management.azure.com/" } | ConvertTo-Json
+$listTokenUri = "https://management.azure.com/$cApplicationId/listTokens?api-version=2018-09-01-preview"
 
 Try {
-    Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
-}
+    $response = Invoke-RestMethod -Uri $listTokenUri -ContentType "application/json" -Method POST -Body $body -Headers $headers
+    $mAppToken = $response.value.access_token
+} 
 Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
     
     if ($_.Exception.Response.StatusCode -eq 409) {
-        
-        $message = "WARNING: Data Share Subscription '$planName' already assigned. Exiting with HTTP 200 to stop retries."
-        
+        $message = "WARNING: Data Share Subscription '$planName' already assigned."
         Write-Host $message
-        
-        Stop-WithHttp -Message $message -StatusCode 200
-    
     }
     else {
         throw $_
@@ -192,71 +166,51 @@ Catch [Microsoft.PowerShell.Commands.HttpResponseException] {
 }
 
 # ----------------------------------------------------
-# Create Data Set Mappings
+# Connect via managed identity
 # ----------------------------------------------------
-foreach ($dataSet in $shareDataSets) {
+Connect-AzAccount -AccessToken $mAppToken -AccountId $mIdentity
 
-    $body = $null
+# Create new Share Subscription
+New-AzDataShareSubscription -ResourceGroupName $mResourceGroupName -AccountName $mDataShareAccount.Name -Name $planName -InvitationId $invitation.InvitationId -SourceShareLocation $pDataShareAccount.Location
 
-    switch ($dataSet) {
-        {$dataSet.Prefix} { 
-            $body = New-FolderRestBody -DataSet $dataSet -ResourceGroupname $mResourceGroupName -StorageAccountName $mStorageAccount.StorageAccountName -SubscriptionId $cSubscriptionId
-         }
-         {$dataSet.FilePath} { 
-            $body = New-BlobRestBody -DataSet $dataSet -ResourceGroupname $mResourceGroupName -StorageAccountName $mStorageAccount.StorageAccountName -SubscriptionId $cSubscriptionId
-         }
-        Default {
-            $body = New-ContainerRestBody -DataSet $dataSet -ResourceGroupname $mResourceGroupName -StorageAccountName $mStorageAccount.StorageAccountName -SubscriptionId $cSubscriptionId
-        }
+Write-Host "MAPPING DATA SETS"
+foreach ($dataSet in $pDataSets) {
+
+    # Write-Host "DataSet.Id: $($dataSet.Id)"
+    # Write-Host "DataSet.DataSetId: $($dataSet.DataSetId)"
+    # Write-Host "DataSet.Name: $($dataSet.Name)"
+    # Write-Host "DataSet.Type: $($dataSet.Type)"
+    # Write-Host "DataSet.FileSystem: $($dataSet.FileSystem)"
+    # Write-Host "DataSet.FilePath: $($dataSet.FilePath)"
+    # Write-Host "DataSet.FolderPath: $($dataSet.FolderPath)"
+    # Write-Host "DataSet.FileName: $($dataSet.FileName)"
+    # Write-Host "+++++++++++++++"
+
+    if ($dataSet.FolderPath) {
+        New-AzDataShareDataSetMapping -ResourceGroupName $mResourceGroupName -AccountName $mDataShareAccount.Name -DataSetId $dataSet.DataSetId -Name $dataSet.Name -ShareSubscriptionName $planName -StorageAccountResourceId $mStorageAccount.Id -FileSystem $dataSet.Name -FolderPath $dataSet.FolderPath
     }
-
-    $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/dataSetMappings/$($dataSet.Name)?api-version=2019-11-01"
-    
-    Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
+    elseif ($dataSet.FilePath) {
+        New-AzDataShareDataSetMapping -ResourceGroupName $mResourceGroupName -AccountName $mDataShareAccount.Name -DataSetId $dataSet.DataSetId -Name $dataSet.Name -ShareSubscriptionName $planName -StorageAccountResourceId $mStorageAccount.Id -FileSystem $dataSet.Name -FilePath $dataSet.FilePath
+    }
+    else {
+        New-AzDataShareDataSetMapping -ResourceGroupName $mResourceGroupName -AccountName $mDataShareAccount.Name -DataSetId $dataSet.DataSetId -Name $dataSet.Name -ShareSubscriptionName $planName -StorageAccountResourceId $mStorageAccount.Id -FileSystem $dataSet.Name
+    }
 }
 
-# ----------------------------------------------------
 # Enable Snapshot schedule
-# ----------------------------------------------------
 if ($pTrigger) {
-    
-    $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/triggers/$($pTrigger.Name)?api-version=2019-11-01"
-    $body = @{
-        "kind"       = "ScheduleBased"
-        "properties" = @{
-            "recurrenceInterval"  = "$($pTrigger.RecurrenceInterval)"
-            "synchronizationMode" = "$($pTrigger.SynchronizationMode)"
-            "synchronizationTime" = "$($pTrigger.SynchronizationTime)"
-        }
-    } | ConvertTo-Json
-
-    Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
+    New-AzDataShareTrigger -ResourceGroupName $mResourceGroupName -AccountName $mDataShareAccount.Name -ShareSubscriptionName $planName -Name $pTrigger.Name -RecurrenceInterval $pTrigger.RecurrenceInterval -SynchronizationTime $pTrigger.SynchronizationTime
 }
 
-
-# ----------------------------------------------------
-# Start Synchronization
 # Check for previously scheduled sync operations
-# ----------------------------------------------------
-$restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/listSynchronizations?api-version=2019-11-01"
-
-$synchronizations = Invoke-RestMethod -Method POST -Uri $restUri -Headers $headers
-
-if ( !$synchronizations.value) {
-    Write-Host "Start synchronization"
-    $restUri = "https://management.azure.com/subscriptions/$cSubscriptionId/resourceGroups/$mResourceGroupName/providers/Microsoft.DataShare/accounts/$($mDataShareAccount.Name)/shareSubscriptions/$planName/Synchronize?api-version=2019-11-01"
-    $body = @{"synchronizationMode" = "Incremental" } | ConvertTo-Json
-
-    Invoke-RestMethod -Method POST -Uri $restUri -Headers $headers -Body $body
-}
-else {
-    Write-Host "Found existing synchronization operatation. Skipping."
+# Start Synchronization
+$synch = Get-AzDataShareSubscriptionSynchronization -ResourceGroupName $mResourceGroupName -AccountName $mDataShareAccount.Name -ShareSubscriptionName $planName
+if(!$synch) {
+    Write-Host "Start synch"
+    Start-AzDataShareSubscriptionSynchronization -ResourceGroupName $mResourceGroupName -AccountName $mDataShareAccount.Name -ShareSubscriptionName $planName -SynchronizationMode Incremental
 }
 
-# ----------------------------------------------------
 # Write final to calling client and Exit Successfully
-# ----------------------------------------------------
-$message = "Request succeeded. Data sync in progress."
-
+$message = "REQUEST SUCCEEDED. DATA SYNC IN PROGRESS."
 Write-Host $message
 Stop-WithHttp -Message $message

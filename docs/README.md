@@ -1,3 +1,4 @@
 # Documentation
 
-Documentation, including installation instructions and examples, may be found in [the root README.md](../README.md) of this repository.
+The documentation for this repository is currently outdated and will be updated as the project is readied for release.
+

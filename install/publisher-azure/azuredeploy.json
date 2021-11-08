@@ -53,7 +53,7 @@
     "resources": [
         {
             "type": "Microsoft.DataShare/accounts",
-            "apiVersion": "2019-11-01",
+            "apiVersion": "2021-08-01",
             "name": "[variables('DataShareAccountName')]",
             "location": "[variables('Location')]",
             "identity": {
@@ -64,7 +64,7 @@
         {
             "type": "Microsoft.Storage/storageAccounts",
             "name": "[variables('FunctionStorageName')]",
-            "apiVersion": "2019-06-01",
+            "apiVersion": "2021-06-01",
             "location": "[variables('location')]",
             "kind": "Storage",
             "sku": {
@@ -73,7 +73,7 @@
         },
         {
             "type": "Microsoft.Web/serverfarms",
-            "apiVersion": "2019-08-01",
+            "apiVersion": "2021-02-01",
             "name": "[variables('AppServicePlanName')]",
             "location": "[variables('Location')]",
             "sku": {
@@ -84,7 +84,7 @@
             }
         },
         {
-            "apiVersion": "2019-08-01",
+            "apiVersion": "2021-02-01",
             "type": "Microsoft.Web/sites",
             "name": "[variables('FunctionAppName')]",
             "location": "[variables('Location')]",
@@ -129,7 +129,7 @@
             },
             "resources": [
                 {
-                    "apiVersion": "2015-08-01",
+                    "apiVersion": "2020-12-01",
                     "name": "MSDeploy",
                     "type": "extensions",
                     "dependsOn": [
@@ -143,7 +143,7 @@
         },
         {
             "type": "Microsoft.Authorization/roleAssignments",
-            "apiVersion": "2018-09-01-preview",
+            "apiVersion": "2020-10-01-preview",
             "name": "[variables('ResourceGroupRoleAssignmentId')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/Sites', variables('FunctionAppName'))]"

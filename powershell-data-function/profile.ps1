@@ -4,8 +4,6 @@
 #     Connect-AzAccount -Identity
 # }
 
-
-
 function New-BlobRestBody () {
 
     param(

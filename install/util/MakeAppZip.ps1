@@ -13,8 +13,10 @@ if(Test-Path $destinationPath) {
 }
 
 $compress = @{
-    Path = "../partner-center-zip/*.json"
+    Path = "../app-zip-contents/*.json"
     CompressionLevel = "Fastest"
     DestinationPath = $destinationPath
   }
   Compress-Archive @compress
+
+  Write-Host "Zipped:" $destinationPath
