@@ -12,7 +12,7 @@ Deploy Data Publisher resources directly your Azure tenant. When prompted, sign 
 
 [![Deploy to Azure](https://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FAzure%2Fcommercial-marketplace-data-offer-accelerator%2Fadls-gen-2%2Finstall%2Fpublisher-azure%2Fazuredeploy.json)
 
-## Publisher Install - Data Storage
+## Publisher Install - Data Storage - Gen 1
 
 Deploy Data Publisher resources directly your Azure tenant. When prompted, sign into Azure using the subscription to be used to host the Data Share resources.
 
