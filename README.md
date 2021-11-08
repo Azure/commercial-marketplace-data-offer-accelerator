@@ -1,5 +1,7 @@
 # Azure Data Marketplace - Proof of Concept
 
+The documentation for this project is currently under development.
+
 **This project is currently in proof-of-concept stage.**
 
 This PoC enables selling and purchasing of raw data within the Azure Marketplace.
