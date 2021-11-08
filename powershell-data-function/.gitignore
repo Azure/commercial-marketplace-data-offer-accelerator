@@ -1,9 +1,0 @@
-
-# Azure Functions artifacts
-bin
-obj
-appsettings.json
-local.settings.json
-
-# vs code folder
-/.vscode
