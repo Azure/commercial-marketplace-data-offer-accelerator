@@ -4,97 +4,6 @@
 #     Connect-AzAccount -Identity
 # }
 
-function New-BlobRestBody () {
-
-    param(
-        [Parameter(Mandatory = $true)]
-        [Microsoft.Azure.PowerShell.Cmdlets.DataShare.Models.PSDataShareDataSet] $DataSet,
-
-        [Parameter(Mandatory = $true)]
-        [String] $StorageAccountName,
-
-        [Parameter(Mandatory = $true)]
-        [String] $ResourceGroupname,
-
-        [Parameter(Mandatory = $true)]
-        [String] $SubscriptionId
-    )
-
-    $body = @{
-        "kind"       = "Blob"
-        "properties" = @{
-            "containerName"      = $DataSet.ContainerName
-            "dataSetId"          = $DataSet.DataSetId
-            "filePath"           = $DataSet.FilePath
-            "resourceGroup"      = $ResourceGroupName
-            "storageAccountName" = $StorageAccountName
-            "subscriptionId"     = $SubscriptionId
-        }
-    } | ConvertTo-Json
-
-    return $body
-}
-
-function New-ContainerRestBody () {
-
-    param(
-        [Parameter(Mandatory = $true)]
-        [Microsoft.Azure.PowerShell.Cmdlets.DataShare.Models.PSDataShareDataSet] $DataSet,
-
-        [Parameter(Mandatory = $true)]
-        [String] $StorageAccountName,
-
-        [Parameter(Mandatory = $true)]
-        [String] $ResourceGroupname,
-
-        [Parameter(Mandatory = $true)]
-        [String] $SubscriptionId
-    )
-
-    $body = @{
-        "kind"       = "Container"
-        "properties" = @{
-            "containerName"      = $DataSet.ContainerName
-            "dataSetId"          = $DataSet.DataSetId
-            "resourceGroup"      = $ResourceGroupName
-            "storageAccountName" = $StorageAccountName
-            "subscriptionId"     = $SubscriptionId
-        }
-    } | ConvertTo-Json
-
-    return $body
-}
-
-function New-FolderRestBody () {
-
-    param(
-        [Parameter(Mandatory = $true)]
-        [Microsoft.Azure.PowerShell.Cmdlets.DataShare.Models.PSDataShareDataSet] $DataSet,
-
-        [Parameter(Mandatory = $true)]
-        [String] $StorageAccountName,
-
-        [Parameter(Mandatory = $true)]
-        [String] $ResourceGroupname,
-
-        [Parameter(Mandatory = $true)]
-        [String] $SubscriptionId
-    )
-
-    $body = @{
-        "kind"       = "BlobFolder"
-        "properties" = @{
-            "containerName"      = $DataSet.ContainerName
-            "dataSetId"          = $DataSet.DataSetId
-            "prefix"             = $DataSet.Prefix
-            "resourceGroup"      = $ResourceGroupName
-            "storageAccountName" = $StorageAccountName
-            "subscriptionId"     = $SubscriptionId
-        }
-    } | ConvertTo-Json
-
-    return $body
-}
 
 function Get-DataShareInvitation () {
 
@@ -173,8 +82,7 @@ function Add-RoleToStorage() {
     # Creating role assignment on Data Storage account: Storage Blob Data Contributor
     $restUri = "https://management.azure.com/$StorageAccountId/providers/Microsoft.Authorization/roleAssignments/$(New-Guid)?api-version=2019-04-01-preview"
 
-    
-    Try {
+        Try {
         
         Invoke-RestMethod -Method PUT -Uri $restUri -Headers $headers -Body $body
         Write-Host "Applied role '$RoleName' to Storage"
@@ -264,40 +172,4 @@ function Stop-WithHttp() {
     )
 
     exit
-}
-
-function Write-ItemAsJson {
-    param(
-        [Parameter(Mandatory = $true)]
-        [String] $HeaderMessage,
-
-        [Parameter(Mandatory = $true)]
-        [System.Object] $Item
-    )
-    
-    Write-Host ==============================================================================================================
-    Write-Host $HeaderMessage
-    Write-Host --------------------------------------------------------------------------------------------------------------
-    Write-Host ($Item | ConvertTo-Json)
-    Write-Host ==============================================================================================================
-
-}
-
-function Write-ItemsAsJSON {
-`
-    
-    param(
-        [Parameter(Mandatory = $true)]
-        [String] $HeaderMessage,
-
-        [Parameter(Mandatory = $true)]
-        [System.Collections.Hashtable] $Items
-    )
-    
-    Write-Host ==============================================================================================================
-    Write-Host $HeaderMessage
-    Write-Host --------------------------------------------------------------------------------------------------------------
-    Write-Host ($Items  | ConvertTo-Json)
-    Write-Host ==============================================================================================================
-
 }
