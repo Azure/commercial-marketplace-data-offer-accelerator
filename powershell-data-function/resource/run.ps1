@@ -94,15 +94,20 @@ if (!$mDataShareAccount) {
 # Assign roles for the Data Store onto the Storage account 
 Add-RoleToStorage -RoleGuid "ba92f5b4-2d11-453d-a403-e96b0029c9fe" -RoleName "Storage Blob Data Contributor" -StorageAccountId $mStorageAccount.Id -DataShareAccount $mDataShareAccount
 
-# Fetching Publisher-side details
-$pResourceGroupName = (Get-Item -Path Env:WEBSITE_RESOURCE_GROUP).Value
-$websiteOwnerName = (Get-Item -Path Env:WEBSITE_OWNER_NAME).Value
-$pSubscriptionId = ($websiteOwnerName -split "\+")[0]
+
 
 # ----------------------------------------------------
 # Connect via publisher context
 # ----------------------------------------------------
+# Fetching Publisher-side subscription
+$websiteOwnerName = (Get-Item -Path Env:WEBSITE_OWNER_NAME).Value
+$pSubscriptionId = ($websiteOwnerName -split "\+")[0]
+
 Set-AzContext -SubscriptionId $pSubscriptionId
+
+# Fetching Publisher-side resource group
+$envResourceGroupName = (Get-Item -Path Env:WEBSITE_RESOURCE_GROUP).Value
+$pResourceGroupName = (Get-AzResourceGroup -Name $envResourceGroupName).ResourceGroupName 
 
 $pDataShareAccount = Get-AzDataShareAccount -ResourceGroupName $pResourceGroupName
 
