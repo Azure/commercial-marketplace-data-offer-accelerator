@@ -46,7 +46,7 @@
         "FunctionAppName": "[concat(parameters('ResourceNamePrefix'), 'function', uniqueString(resourceGroup().id))]",
         "FunctionStorageName": "[concat(replace(parameters('ResourceNamePrefix'), '-', ''), 'function', uniqueString(resourceGroup().id))]",
         "Location": "[parameters('ResourceLocation')]",
-        "PackageURI": "https://github.com/Azure/commercial-marketplace-data-offer-accelerator/blob/adls-gen-2/install/publisher-azure/functionapp/functionapp.zip",
+        "PackageURI": "https://github.com/Azure/commercial-marketplace-data-offer-accelerator/blob/adls-gen-2/install/publisher-azure/functionapp/functionapp.zip?raw=true",
         "ContributorRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
         "ResourceGroupRoleAssignmentId": "[guid(concat(resourceGroup().id, 'contributor'))]"
     },
