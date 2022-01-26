@@ -1,4 +1,4 @@
-# Azure Data Marketplace - Proof of Concept
+# Azure Data Accelerator
 
 The documentation for this project is currently under development.
 
